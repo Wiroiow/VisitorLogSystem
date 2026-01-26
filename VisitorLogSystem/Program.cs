@@ -57,6 +57,9 @@ builder.Services.AddScoped<IUserManagementService, UserManagementService>();
 builder.Services.AddScoped<IRoomVisitRepository, RoomVisitRepository>();
 builder.Services.AddScoped<IRoomVisitService, RoomVisitService>();
 
+builder.Services.AddScoped<IDashboardRepository, DashboardRepository>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
+
 // ═══════════════════════════════════════════════════════════
 // STEP 5: Configure Logging
 // ═══════════════════════════════════════════════════════════

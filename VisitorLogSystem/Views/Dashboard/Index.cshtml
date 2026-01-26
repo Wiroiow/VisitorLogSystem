@@ -58,7 +58,7 @@
         </div>
     </div>
 
-    <!-- ✅ NEW: Room Visits Card -->
+    <!-- Room Visits Card -->
     <div class="col-md-3 col-lg-2 mb-3">
         <div class="card text-white bg-warning h-100">
             <div class="card-body text-center d-flex flex-column justify-content-center">
@@ -72,7 +72,7 @@
 </div>
 
 <!-- Recent Visitors Table -->
-<div class="row">
+<div class="row mb-4">
     <div class="col-12">
         <div class="card">
             <div class="card-header">
@@ -131,3 +131,228 @@
         </div>
     </div>
 </div>
+
+<!-- ========================================== -->
+<!-- NEW SECTION: Analytics & Charts -->
+<!-- ========================================== -->
+<div class="row mb-3">
+    <div class="col">
+        <h4>📈 Analytics & Charts</h4>
+        <p class="text-muted">Visual insights and trends</p>
+    </div>
+</div>
+
+<!-- Charts Row 1: Line Chart and Doughnut Chart -->
+<div class="row mb-4">
+    <!-- Visitors Per Day Chart -->
+    <div class="col-md-6 mb-3">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">📅 Visitors Per Day (Last 7 Days)</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="visitorsPerDayChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Visitor Status Chart -->
+    <div class="col-md-6 mb-3">
+        <div class="card h-100">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">👥 Visitor Status</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="visitorStatusChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row 2: Top Rooms Bar Chart -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">🏆 Top 5 Rooms Visited (Last 30 Days)</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="topRoomsChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Chart.js Library from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // ============================================
+        // Chart 1: Visitors Per Day (Line Chart)
+        // ============================================
+        fetch('/Dashboard/GetVisitorsPerDay')
+            .then(response => response.json())
+            .then(data => {
+                const ctx = document.getElementById('visitorsPerDayChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: 'Number of Visitors',
+                            data: data.data,
+                            borderColor: 'rgb(75, 192, 192)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            tension: 0.3,
+                            fill: true,
+                            borderWidth: 2,
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1,
+                                    precision: 0
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return 'Visitors: ' + context.parsed.y;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Error loading visitors per day chart:', error);
+                document.getElementById('visitorsPerDayChart').parentElement.innerHTML =
+                    '<p class="text-danger">Failed to load chart data.</p>';
+            });
+
+        // ============================================
+        // Chart 2: Visitor Status (Doughnut Chart)
+        // ============================================
+        fetch('/Dashboard/GetVisitorStatus')
+            .then(response => response.json())
+            .then(data => {
+                const ctx = document.getElementById('visitorStatusChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            data: data.data,
+                            backgroundColor: [
+                                'rgba(40, 167, 69, 0.8)',   // Green for Inside
+                                'rgba(220, 53, 69, 0.8)'    // Red for Checked Out
+                            ],
+                            borderColor: [
+                                'rgba(40, 167, 69, 1)',
+                                'rgba(220, 53, 69, 1)'
+                            ],
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    padding: 15,
+                                    font: {
+                                        size: 13
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = context.parsed || 0;
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                                        return label + ': ' + value + ' (' + percentage + '%)';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Error loading visitor status chart:', error);
+                document.getElementById('visitorStatusChart').parentElement.innerHTML =
+                    '<p class="text-danger">Failed to load chart data.</p>';
+            });
+
+        // ============================================
+        // Chart 3: Top Rooms Visited (Bar Chart)
+        // ============================================
+        fetch('/Dashboard/GetTopRooms')
+            .then(response => response.json())
+            .then(data => {
+                const ctx = document.getElementById('topRoomsChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: 'Number of Visits',
+                            data: data.data,
+                            backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1,
+                                    precision: 0
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return 'Visits: ' + context.parsed.y;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Error loading top rooms chart:', error);
+                document.getElementById('topRoomsChart').parentElement.innerHTML =
+                    '<p class="text-danger">Failed to load chart data.</p>';
+            });
+    </script>
+}

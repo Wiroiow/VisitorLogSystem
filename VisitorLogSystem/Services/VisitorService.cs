@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using VisitorLogSystem.DTOs;
+﻿using VisitorLogSystem.DTOs;
 using VisitorLogSystem.Interfaces;
 using VisitorLogSystem.Models;
 
@@ -30,7 +26,7 @@ namespace VisitorLogSystem.Services
             var visitor = await _repository.GetByIdAsync(id);
 
             if (visitor == null)
-                return null; 
+                return null;
 
             return MapToDto(visitor);
         }
@@ -51,7 +47,7 @@ namespace VisitorLogSystem.Services
         {
             var existingVisitor = await _repository.GetByIdAsync(visitorDto.Id);
             if (existingVisitor == null)
-                return null; 
+                return null;
 
             existingVisitor.FullName = visitorDto.FullName;
             existingVisitor.Purpose = visitorDto.Purpose;

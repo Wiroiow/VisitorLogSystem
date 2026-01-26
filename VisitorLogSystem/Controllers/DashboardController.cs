@@ -7,27 +7,21 @@ using VisitorLogSystem.ViewModels;
 
 namespace VisitorLogSystem.Controllers
 {
-   
-    
-    
-    
-    [Authorize] 
+    [Authorize]
     public class DashboardController : Controller
     {
         private readonly IVisitorService _visitorService;
+        private readonly IDashboardService _dashboardService;
 
-        public DashboardController(IVisitorService visitorService)
+        public DashboardController(IVisitorService visitorService, IDashboardService dashboardService)
         {
             _visitorService = visitorService;
+            _dashboardService = dashboardService;
         }
 
+        // YOUR EXISTING INDEX METHOD - UNCHANGED
         public async Task<IActionResult> Index()
         {
-            // You can now access user info from claims!
-            // User.Identity.Name = "admin"
-            // User.FindFirst(ClaimTypes.NameIdentifier).Value = "1"
-            // User.IsInRole("Admin") = true
-
             var dashboardViewModel = new DashboardViewModel
             {
                 TotalVisitorsToday = await _visitorService.GetTodayVisitorCountAsync(),
@@ -45,8 +39,29 @@ namespace VisitorLogSystem.Controllers
                     })
                     .ToList()
             };
-
             return View(dashboardViewModel);
+        }
+
+        // NEW CHART ENDPOINTS
+        [HttpGet]
+        public async Task<IActionResult> GetVisitorsPerDay()
+        {
+            var data = await _dashboardService.GetVisitorsPerDayAsync(7);
+            return Json(data);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetVisitorStatus()
+        {
+            var data = await _dashboardService.GetVisitorStatusAsync();
+            return Json(data);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetTopRooms()
+        {
+            var data = await _dashboardService.GetTopRoomsAsync(5, 30);
+            return Json(data);
         }
     }
 }
