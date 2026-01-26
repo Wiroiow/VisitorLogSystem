@@ -13,6 +13,8 @@ namespace VisitorLogSystem.DTOs
 
         public string Role { get; set; } = string.Empty;
 
+        public string Passive { get; set; } = string.Empty;
+
         public DateTime CreatedAt { get; set; }
 
         
