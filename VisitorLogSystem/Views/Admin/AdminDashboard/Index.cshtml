@@ -1,0 +1,241 @@
+﻿@model VisitorLogSystem.ViewModels.Admin.AdminDashboardViewModel
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<!-- Page Header -->
+<div class="row mb-4">
+    <div class="col">
+        <h2>⚙️ Admin Dashboard</h2>
+        <p class="text-muted">System overview and management</p>
+    </div>
+    <div class="col text-end">
+        <a href="@Url.Action("Index", "UserManagement", new { area = "" })" class="btn btn-primary">
+            👥 Manage Users
+        </a>
+    </div>
+</div>
+
+<!-- Statistics Cards Row 1 - User Stats -->
+<div class="row mb-4">
+    <!-- Total Users Card -->
+    <div class="col-md-4">
+        <div class="card text-white bg-primary mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-0">Total Users</h6>
+                        <h2 class="display-4 mb-0">@Model.TotalUsers</h2>
+                    </div>
+                    <div>
+                        <i class="bi bi-people-fill" style="font-size: 3rem; opacity: 0.5;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Users Card -->
+    <div class="col-md-4">
+        <div class="card text-white bg-warning mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-0 text-dark">Admins</h6>
+                        <h2 class="display-4 mb-0 text-dark">@Model.TotalAdmins</h2>
+                    </div>
+                    <div>
+                        <i class="bi bi-shield-fill-check" style="font-size: 3rem; opacity: 0.5;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Staff Users Card -->
+    <div class="col-md-4">
+        <div class="card text-white bg-info mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-0">Staff</h6>
+                        <h2 class="display-4 mb-0">@Model.TotalStaff</h2>
+                    </div>
+                    <div>
+                        <i class="bi bi-person-badge-fill" style="font-size: 3rem; opacity: 0.5;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards Row 2 - Visitor Stats -->
+<div class="row mb-4">
+    <!-- Total Visitors Card -->
+    <div class="col-md-4">
+        <div class="card bg-light mb-3">
+            <div class="card-body">
+                <h6 class="card-title">Total Visitors (All-Time)</h6>
+                <h2 class="display-5">@Model.TotalVisitors</h2>
+            </div>
+        </div>
+    </div>
+
+    <!-- Today's Visitors Card -->
+    <div class="col-md-4">
+        <div class="card bg-light mb-3">
+            <div class="card-body">
+                <h6 class="card-title">Visitors Today</h6>
+                <h2 class="display-5">@Model.VisitorsToday</h2>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monthly Visitors Card -->
+    <div class="col-md-4">
+        <div class="card bg-light mb-3">
+            <div class="card-body">
+                <h6 class="card-title">Visitors This Month</h6>
+                <h2 class="display-5">@Model.VisitorsThisMonth</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Two Column Layout for Recent Activity -->
+<div class="row">
+    <!-- Recent Users -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">👥 Recent Users</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.RecentUsers.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Role</th>
+                                    <th>Created</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var user in Model.RecentUsers)
+                                {
+                                    <tr>
+                                        <td>@user.Username</td>
+                                        <td>
+                                            <span class="badge @user.RoleBadgeClass">@user.Role</span>
+                                        </td>
+                                        <td>@user.CreatedAtDisplay</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="@Url.Action("Index", "UserManagement")" class="btn btn-sm btn-outline-primary">
+                            View All Users →
+                        </a>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted">No users found.</p>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Visitor Activity -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">🕐 Recent Visitor Activity</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.RecentActivity.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Purpose</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var visitor in Model.RecentActivity)
+                                {
+                                    <tr>
+                                        <td>@visitor.FullName</td>
+                                        <td>@visitor.Purpose</td>
+                                        <td>
+                                            @if (visitor.TimeOut.HasValue)
+                                            {
+                                                <span class="badge bg-secondary">Left</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-success">Inside</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="@Url.Action("Index", "Visitor")" class="btn btn-sm btn-outline-success">
+                            View All Visitors →
+                        </a>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted">No recent activity.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">⚡ Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-2">
+                        <a href="@Url.Action("Create", "UserManagement")" class="btn btn-outline-primary w-100">
+                            ➕ Create New User
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="@Url.Action("Index", "UserManagement")" class="btn btn-outline-info w-100">
+                            👥 Manage Users
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="@Url.Action("Index", "Visitor")" class="btn btn-outline-success w-100">
+                            📋 View Visitors
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="@Url.Action("Index", "Dashboard")" class="btn btn-outline-secondary w-100">
+                            🏠 Main Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

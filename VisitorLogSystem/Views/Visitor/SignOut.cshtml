@@ -1,0 +1,113 @@
+﻿@model VisitorLogSystem.Models.Visitor
+
+@{
+    ViewData["Title"] = "Sign Out Visitor";
+}
+
+<h1>Sign Out Visitor</h1>
+
+<div class="alert alert-info">
+    <h4>Confirm Sign Out</h4>
+    <p>Please confirm that <strong>@(Model?.FullName ?? "this visitor")</strong> is leaving the building.</p>
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Visitor Details</h5>
+    </div>
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Full Name</dt>
+            <dd class="col-sm-9">@(Model?.FullName ?? "Unknown")</dd>
+
+            <dt class="col-sm-3">Purpose</dt>
+            <dd class="col-sm-9">@(Model?.Purpose ?? "N/A")</dd>
+
+            <dt class="col-sm-3">Contact Number</dt>
+            <dd class="col-sm-9">@(Model?.ContactNumber ?? "Not provided")</dd>
+
+            <dt class="col-sm-3">Time In</dt>
+            <dd class="col-sm-9">@(Model?.TimeIn.ToString("MMMM dd, yyyy hh:mm tt") ?? "Unknown")</dd>
+
+            <dt class="col-sm-3">Duration in Building</dt>
+            <dd class="col-sm-9">
+                @if (Model != null)
+                {
+                    var duration = DateTime.Now - Model.TimeIn;
+                    if (duration.Days > 0)
+                    {
+                        <span class="badge bg-warning text-dark">@duration.Days day(s) @duration.Hours hour(s) @duration.Minutes minute(s)</span>
+                    }
+                    else if (duration.Hours > 0)
+                    {
+                        <span class="badge bg-info">@duration.Hours hour(s) @duration.Minutes minute(s)</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-success">@duration.Minutes minute(s)</span>
+                    }
+                }
+                else
+                {
+                    <span class="text-muted">Unknown</span>
+                }
+            </dd>
+
+            <dt class="col-sm-3">Rooms Visited</dt>
+            <dd class="col-sm-9">
+                @if (Model?.RoomVisits != null && Model.RoomVisits.Any())
+                {
+                    <span class="badge bg-info">@Model.RoomVisits.Count room(s)</span>
+                    <ul class="mt-2 mb-0">
+                        @foreach (var visit in Model.RoomVisits.OrderBy(rv => rv.EnteredAt))
+                        {
+                            <li>
+                                <strong>@visit.RoomName</strong> - 
+                                @visit.EnteredAt.ToString("hh:mm tt")
+                                @if (!string.IsNullOrWhiteSpace(visit.Purpose))
+                                {
+                                    <span class="text-muted">(@visit.Purpose)</span>
+                                }
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <span class="text-muted">No room visits recorded</span>
+                }
+            </dd>
+
+            <dt class="col-sm-3">Sign Out Time</dt>
+            <dd class="col-sm-9">
+                <strong class="text-primary">@DateTime.Now.ToString("MMMM dd, yyyy hh:mm tt")</strong>
+            </dd>
+        </dl>
+    </div>
+</div>
+
+<form asp-action="SignOut" method="post" class="mt-4">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    
+    <div class="d-grid gap-2 d-md-flex">
+        <button type="submit" class="btn btn-success btn-lg">
+            <i class="bi bi-box-arrow-right"></i> Confirm Sign Out
+        </button>
+        <a asp-action="Index" class="btn btn-secondary btn-lg">
+            <i class="bi bi-x-circle"></i> Cancel
+        </a>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        // Optional: Add confirmation dialog
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const visitorName = '@(Model?.FullName ?? "this visitor")';
+            if (!confirm(`Are you sure you want to sign out ${visitorName}?`)) {
+                e.preventDefault();
+            }
+        });
+    </script>
+}

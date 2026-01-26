@@ -1,0 +1,180 @@
+﻿@model VisitorLogSystem.Models.Visitor
+@{
+    ViewData["Title"] = "Visitor Details";
+}
+
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4>👤 Visitor Details</h4>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-4">ID</dt>
+                    <dd class="col-sm-8">@Model.Id</dd>
+
+                    <dt class="col-sm-4">Full Name</dt>
+                    <dd class="col-sm-8"><strong>@Model.FullName</strong></dd>
+
+                    <dt class="col-sm-4">Contact Number</dt>
+                    <dd class="col-sm-8">@Model.DisplayContactNumber</dd>
+
+                    <dt class="col-sm-4">Purpose of Visit</dt>
+                    <dd class="col-sm-8">@Model.Purpose</dd>
+
+                    <dt class="col-sm-4">Time In</dt>
+                    <dd class="col-sm-8">
+                        <span class="badge bg-success">
+                            @Model.TimeIn.ToString("MMM dd, yyyy hh:mm tt")
+                        </span>
+                    </dd>
+
+                    <dt class="col-sm-4">Time Out</dt>
+                    <dd class="col-sm-8">
+                        @if (Model.TimeOut.HasValue)
+                        {
+                            <span class="badge bg-secondary">
+                                @Model.TimeOut.Value.ToString("MMM dd, yyyy hh:mm tt")
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning text-dark">Still Inside</span>
+                        }
+                    </dd>
+
+                    @if (Model.TimeOut.HasValue)
+                    {
+                        <dt class="col-sm-4">Duration</dt>
+                        <dd class="col-sm-8">
+                            @{
+                                var duration = Model.TimeOut.Value - Model.TimeIn;
+                                var hours = (int)duration.TotalHours;
+                                var minutes = duration.Minutes;
+                            }
+                            <span class="badge bg-info">
+                                @hours hour(s) @minutes minute(s)
+                            </span>
+                        </dd>
+                    }
+
+                    <dt class="col-sm-4">Status</dt>
+                    <dd class="col-sm-8">
+                        @if (Model.IsCurrentlyInBuilding)
+                        {
+                            <span class="badge bg-success">Currently In Building</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Checked Out</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-4">Total Room Visits</dt>
+                    <dd class="col-sm-8">
+                        <span class="badge bg-info">@Model.RoomVisitCount room(s)</span>
+                    </dd>
+
+                    <dt class="col-sm-4">Created At</dt>
+                    <dd class="col-sm-8">@Model.CreatedAt.ToString("MMM dd, yyyy hh:mm tt")</dd>
+
+                    <dt class="col-sm-4">Updated At</dt>
+                    <dd class="col-sm-8">@Model.UpdatedAt.ToString("MMM dd, yyyy hh:mm tt")</dd>
+                </dl>
+
+                <!-- Action Buttons -->
+                <div class="mt-4">
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">
+                        <i class="bi bi-pencil"></i> Edit
+                    </a>
+                    
+                    @if (!Model.TimeOut.HasValue)
+                    {
+                        <a asp-action="SignOut" asp-route-id="@Model.Id" class="btn btn-danger">
+                            <i class="bi bi-box-arrow-right"></i> Sign Out
+                        </a>
+                    }
+                    
+                    <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Delete
+                    </a>
+                    
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to List
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Room Visits Section -->
+        @if (Model.RoomVisits != null && Model.RoomVisits.Count > 0)
+        {
+            <div class="card mt-4">
+                <div class="card-header bg-info text-white">
+                    <h5>🚪 Room Visit History (@Model.RoomVisitCount visits)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Room Name</th>
+                                    <th>Entered At</th>
+                                    <th>Purpose</th>
+                                    <th>Created At</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var roomVisit in Model.RoomVisits.OrderByDescending(rv => rv.EnteredAt))
+                                {
+                                    <tr>
+                                        <td><strong>@roomVisit.RoomName</strong></td>
+                                        <td>
+                                            <span class="badge bg-success">
+                                                @roomVisit.EnteredAt.ToString("MMM dd, yyyy hh:mm tt")
+                                            </span>
+                                        </td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(roomVisit.Purpose))
+                                            {
+                                                @roomVisit.Purpose
+                                            }
+                                            else
+                                            {
+                                                <em class="text-muted">Not specified</em>
+                                            }
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">@roomVisit.CreatedAt.ToString("MMM dd, yyyy hh:mm tt")</small>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <a asp-controller="RoomVisits" asp-action="Create" asp-route-visitorId="@Model.Id" class="btn btn-primary">
+                            <i class="bi bi-plus-circle"></i> Add Room Visit
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="card mt-4">
+                <div class="card-header bg-info text-white">
+                    <h5>🚪 Room Visit History</h5>
+                </div>
+                <div class="card-body text-center">
+                    <p class="text-muted">No room visits recorded yet.</p>
+                    <a asp-controller="RoomVisits" asp-action="Create" asp-route-visitorId="@Model.Id" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Add First Room Visit
+                    </a>
+                </div>
+            </div>
+        }
+    </div>
+</div>

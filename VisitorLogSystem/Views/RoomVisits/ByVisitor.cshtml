@@ -1,0 +1,49 @@
+﻿@model IEnumerable<VisitorLogSystem.Models.RoomVisit>
+
+@{
+    ViewData["Title"] = $"Room Visits - {ViewData["VisitorName"]}";
+}
+
+<h1>Room Visits</h1>
+<h4 class="text-muted">Visitor: @ViewData["VisitorName"]</h4>
+
+<hr />
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Room</th>
+            <th>Entered At</th>
+            <th>Purpose</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null && Model.Any())
+        {
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.RoomName</td>
+                    <td>@item.EnteredAt.ToString("MMM dd, yyyy hh:mm tt")</td>
+                    <td>@(item.Purpose ?? "-")</td>
+                    <td>
+                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">Details</a>
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="4" class="text-center text-muted">
+                    <em>No room visits for this visitor.</em>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<div>
+    <a asp-controller="Visitors" asp-action="Index" class="btn btn-secondary">Back to Visitors</a>
+</div>

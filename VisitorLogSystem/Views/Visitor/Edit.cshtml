@@ -1,0 +1,137 @@
+﻿@model VisitorLogSystem.Models.Visitor
+
+@{
+    ViewData["Title"] = "Edit Visitor";
+    
+    // Format datetime values for datetime-local input
+    var timeInFormatted = Model?.TimeIn.ToString("yyyy-MM-ddTHH:mm") ?? DateTime.Now.ToString("yyyy-MM-ddTHH:mm");
+    var timeOutFormatted = Model?.TimeOut?.ToString("yyyy-MM-ddTHH:mm") ?? "";
+}
+
+<h1>Edit Visitor</h1>
+
+<hr />
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="CreatedAt" />
+            
+            <div class="form-group mb-3">
+                <label asp-for="FullName" class="control-label">Full Name</label>
+                <input asp-for="FullName" class="form-control" required />
+                <span asp-validation-for="FullName" class="text-danger"></span>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label asp-for="Purpose" class="control-label">Purpose of Visit</label>
+                <textarea asp-for="Purpose" class="form-control" rows="3" required></textarea>
+                <span asp-validation-for="Purpose" class="text-danger"></span>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label asp-for="ContactNumber" class="control-label">Contact Number (Optional)</label>
+                <input asp-for="ContactNumber" class="form-control" type="tel" placeholder="+63 XXX XXX XXXX" />
+                <span asp-validation-for="ContactNumber" class="text-danger"></span>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label asp-for="TimeIn" class="control-label">Time In</label>
+                <input asp-for="TimeIn" type="datetime-local" class="form-control" value="@timeInFormatted" required />
+                <span asp-validation-for="TimeIn" class="text-danger"></span>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label asp-for="TimeOut" class="control-label">Time Out (Optional)</label>
+                <input asp-for="TimeOut" type="datetime-local" class="form-control" value="@timeOutFormatted" />
+                <span asp-validation-for="TimeOut" class="text-danger"></span>
+                <small class="form-text text-muted">Leave empty if visitor is still in the building</small>
+            </div>
+            
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save"></i> Save Changes
+                </button>
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="bi bi-x-circle"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Optional: Display current visitor info -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Current Information</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-5">Visitor ID:</dt>
+                    <dd class="col-sm-7">@Model?.Id</dd>
+                    
+                    <dt class="col-sm-5">Current Name:</dt>
+                    <dd class="col-sm-7">@(Model?.FullName ?? "N/A")</dd>
+                    
+                    <dt class="col-sm-5">Status:</dt>
+                    <dd class="col-sm-7">
+                        @if (Model?.TimeOut == null)
+                        {
+                            <span class="badge bg-success">In Building</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Signed Out</span>
+                        }
+                    </dd>
+                    
+                    <dt class="col-sm-5">Room Visits:</dt>
+                    <dd class="col-sm-7">@(Model?.RoomVisits?.Count ?? 0) room(s)</dd>
+                    
+                    <dt class="col-sm-5">Record Created:</dt>
+                    <dd class="col-sm-7">@(Model?.CreatedAt.ToString("MMM dd, yyyy hh:mm tt") ?? "N/A")</dd>
+                    
+                    <dt class="col-sm-5">Last Updated:</dt>
+                    <dd class="col-sm-7">@(Model?.UpdatedAt.ToString("MMM dd, yyyy hh:mm tt") ?? "N/A")</dd>
+                </dl>
+                
+                @if (Model?.RoomVisits != null && Model.RoomVisits.Any())
+                {
+                    <hr />
+                    <h6>Recent Room Visits:</h6>
+                    <ul class="list-unstyled mb-0">
+                        @foreach (var visit in Model.RoomVisits.OrderByDescending(rv => rv.EnteredAt).Take(3))
+                        {
+                            <li class="small">
+                                <i class="bi bi-door-open"></i> @visit.RoomName 
+                                <span class="text-muted">(@visit.EnteredAt.ToString("hh:mm tt"))</span>
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        // Optional: Add confirmation for changing TimeOut
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const timeOutInput = document.querySelector('input[name="TimeOut"]');
+            const currentTimeOut = '@Model?.TimeOut';
+            
+            // If changing from null to a value (signing out via edit)
+            if (!currentTimeOut && timeOutInput.value) {
+                if (!confirm('Are you sure you want to sign out this visitor?')) {
+                    e.preventDefault();
+                }
+            }
+        });
+    </script>
+}

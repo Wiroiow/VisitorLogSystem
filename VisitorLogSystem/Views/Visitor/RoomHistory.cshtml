@@ -1,0 +1,57 @@
+﻿@model List<VisitorLogSystem.DTOs.RoomVisitDto>
+@{
+    ViewData["Title"] = "Room History";
+}
+
+<div class="row mb-3">
+    <div class="col">
+        <h2>📍 Room History for @ViewBag.VisitorName</h2>
+    </div>
+    <div class="col text-end">
+        <a href="@Url.Action("EnterRoom", new { id = ViewBag.VisitorId })" class="btn btn-primary">
+            ➕ Record Room Entry
+        </a>
+        <a href="@Url.Action("Index")" class="btn btn-secondary">
+            ⬅️ Back to Visitors
+        </a>
+    </div>
+</div>
+
+@if (Model.Any())
+{
+    <div class="card">
+        <div class="card-body">
+            <table class="table table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>#</th>
+                        <th>Room</th>
+                        <th>Entered At</th>
+                        <th>Purpose</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var room in Model)
+                    {
+                        <tr>
+                            <td>@room.Id</td>
+                            <td><strong>@room.RoomName</strong></td>
+                            <td>@room.EnteredAt.ToString("MMM dd, yyyy hh:mm tt")</td>
+                            <td>@(room.Purpose ?? "Not specified")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="alert alert-info mt-3">
+        <strong>Total Rooms Visited:</strong> @Model.Count
+    </div>
+}
+else
+{
+    <div class="alert alert-warning">
+        No room visits recorded yet.
+    </div>
+}

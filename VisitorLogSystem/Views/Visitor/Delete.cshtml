@@ -1,0 +1,56 @@
+﻿@model VisitorLogSystem.Models.Visitor
+
+@{
+    ViewData["Title"] = "Delete Visitor";
+}
+
+<h1>Delete Visitor</h1>
+
+<div class="alert alert-danger">
+    <h4>Are you sure you want to delete this visitor record?</h4>
+    @if (Model?.RoomVisits != null && Model.RoomVisits.Any())
+    {
+        <p class="mb-0">
+            <strong>Warning:</strong> This will also delete @Model.RoomVisits.Count room visit record(s).
+        </p>
+    }
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Name</dt>
+            <dd class="col-sm-9">@(Model?.FullName ?? "Unknown")</dd>
+
+            <dt class="col-sm-3">Purpose</dt>
+            <dd class="col-sm-9">@(Model?.Purpose ?? "N/A")</dd>
+
+            <dt class="col-sm-3">Contact</dt>
+            <dd class="col-sm-9">@(Model?.ContactNumber ?? "Not provided")</dd>
+
+            <dt class="col-sm-3">Time In</dt>
+            <dd class="col-sm-9">@(Model?.TimeIn.ToString("MMMM dd, yyyy hh:mm tt") ?? "Unknown")</dd>
+
+            <dt class="col-sm-3">Time Out</dt>
+            <dd class="col-sm-9">
+                @if (Model?.TimeOut.HasValue == true)
+                {
+                    @Model.TimeOut.Value.ToString("MMMM dd, yyyy hh:mm tt")
+                }
+                else
+                {
+                    <span class="text-muted">Still in building</span>
+                }
+            </dd>
+
+            <dt class="col-sm-3">Room Visits</dt>
+            <dd class="col-sm-9">@(Model?.RoomVisits?.Count ?? 0) room(s)</dd>
+        </dl>
+    </div>
+</div>
+
+<form asp-action="Delete" class="mt-3">
+    <input type="hidden" asp-for="Id" />
+    <button type="submit" class="btn btn-danger">Delete Permanently</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>

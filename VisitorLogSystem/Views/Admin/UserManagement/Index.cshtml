@@ -1,0 +1,134 @@
+﻿@model List<VisitorLogSystem.ViewModels.Admin.UserViewModel>
+@{
+    ViewData["Title"] = "User Management";
+}
+
+<!-- Page Header -->
+<div class="row mb-3">
+    <div class="col">
+        <h2>👥 User Management</h2>
+        <p class="text-muted">Manage system users and their roles</p>
+    </div>
+    <div class="col text-end">
+        <a href="@Url.Action("Create")" class="btn btn-primary">
+            ➕ Create New User
+        </a>
+        <a href="@Url.Action("Index", "AdminDashboard")" class="btn btn-secondary">
+            ⬅️ Back to Admin Dashboard
+        </a>
+    </div>
+</div>
+
+<!-- Success/Error Messages -->
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        ✅ @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        ❌ @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- User Statistics -->
+<div class="row mb-3">
+    <div class="col-md-4">
+        <div class="card bg-light">
+            <div class="card-body">
+                <h6>Total Users</h6>
+                <h3>@Model.Count</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-light">
+            <div class="card-body">
+                <h6>Admins</h6>
+                <h3>@Model.Count(u => u.Role == "Admin")</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-light">
+            <div class="card-body">
+                <h6>Staff</h6>
+                <h3>@Model.Count(u => u.Role == "Staff")</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Users Table -->
+<div class="card">
+    <div class="card-body">
+        @if (Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Username</th>
+                            <th>Role</th>
+                            <th>Created At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in Model)
+                        {
+                            <tr>
+                                <td>@user.Id</td>
+                                <td>
+                                    <strong>@user.Username</strong>
+                                    @if (user.Username == User.Identity!.Name) 
+                                    {
+                                        <span class="badge bg-success">You</span>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="badge @user.RoleBadgeClass">
+                                        @user.Role
+                                    </span>
+                                </td>
+                                <td>@user.CreatedAt.ToString("MMM dd, yyyy hh:mm tt")</td>
+                                <td>
+                                    <a href="@Url.Action("Edit", new { id = user.Id })" 
+                                       class="btn btn-sm btn-warning">
+                                        ✏️ Edit
+                                    </a>
+                                    
+                                    @if (user.Username != User.Identity.Name)
+                                    {
+                                        <a href="@Url.Action("Delete", new { id = user.Id })" 
+                                           class="btn btn-sm btn-danger">
+                                            🗑️ Delete
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn btn-sm btn-secondary" disabled title="You cannot delete yourself">
+                                            🗑️ Delete
+                                        </button>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info">
+                No users found. Click "Create New User" to add one.
+            </div>
+        }
+    </div>
+</div>

@@ -1,0 +1,74 @@
+﻿@model VisitorLogSystem.Models.RoomVisit
+@{
+    ViewData["Title"] = "Edit Room Visit";
+    // Check if the visitor has signed out
+    var visitorSignedOut = Model.Visitor?.TimeOut.HasValue ?? false;
+}
+
+<h1>Edit Room Visit</h1>
+<hr />
+
+@if (visitorSignedOut)
+{
+    <div class="alert alert-warning" role="alert">
+        <i class="bi bi-exclamation-triangle"></i>
+        <strong>Warning:</strong> This visitor has already signed out. Editing room visits for signed-out visitors is not recommended.
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="CreatedAt" />
+
+            <div class="form-group mb-3">
+                <label asp-for="VisitorId" class="control-label">Visitor</label>
+                <select asp-for="VisitorId" class="form-control" asp-items="ViewBag.VisitorId" disabled="@visitorSignedOut"></select>
+                <span asp-validation-for="VisitorId" class="text-danger"></span>
+                @if (visitorSignedOut)
+                {
+                    <small class="text-muted">Visitor has signed out - cannot change visitor</small>
+                }
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="RoomName" class="control-label">Room Name/Number</label>
+                <input asp-for="RoomName" class="form-control" readonly="@visitorSignedOut" />
+                <span asp-validation-for="RoomName" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="EnteredAt" class="control-label">Entry Time</label>
+                <input asp-for="EnteredAt" type="datetime-local" class="form-control" readonly="@visitorSignedOut" />
+                <span asp-validation-for="EnteredAt" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Purpose" class="control-label">Purpose</label>
+                <textarea asp-for="Purpose" class="form-control" rows="3" readonly="@visitorSignedOut"></textarea>
+                <span asp-validation-for="Purpose" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                @if (!visitorSignedOut)
+                {
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                }
+                else
+                {
+                    <button type="button" class="btn btn-secondary" disabled>Cannot Edit - Visitor Signed Out</button>
+                }
+                <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

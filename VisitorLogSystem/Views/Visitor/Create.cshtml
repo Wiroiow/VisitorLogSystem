@@ -1,0 +1,62 @@
+﻿@model VisitorLogSystem.ViewModels.VisitorViewModel
+@{
+    ViewData["Title"] = "Add New Visitor";
+}
+
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header">
+                <h4>➕ Add New Visitor</h4>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create" method="post">
+                    @* Anti-forgery token for security *@
+                    @Html.AntiForgeryToken()
+
+                    @* Validation summary - shows all errors *@
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                    <!-- Full Name -->
+                    <div class="mb-3">
+                        <label asp-for="FullName" class="form-label"></label>
+                        <input asp-for="FullName" class="form-control" placeholder="Enter full name" />
+                        <span asp-validation-for="FullName" class="text-danger"></span>
+                    </div>
+
+                    <!-- Purpose -->
+                    <div class="mb-3">
+                        <label asp-for="Purpose" class="form-label"></label>
+                        <textarea asp-for="Purpose" class="form-control" rows="3" placeholder="e.g., Meeting, Delivery"></textarea>
+                        <span asp-validation-for="Purpose" class="text-danger"></span>
+                    </div>
+
+                    <!-- Contact Number -->
+                    <div class="mb-3">
+                        <label asp-for="ContactNumber" class="form-label"></label>
+                        <input asp-for="ContactNumber" class="form-control" placeholder="e.g., 09171234567" />
+                        <span asp-validation-for="ContactNumber" class="text-danger"></span>
+                    </div>
+
+                    <!-- Time In -->
+                    <div class="mb-3">
+                        <label asp-for="TimeIn" class="form-label"></label>
+                        <input asp-for="TimeIn" class="form-control" type="datetime-local" />
+                        <span asp-validation-for="TimeIn" class="text-danger"></span>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="mb-3">
+                        <button type="submit" class="btn btn-primary">💾 Save Visitor</button>
+                        <a href="@Url.Action("Index")" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Client-side validation scripts *@
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

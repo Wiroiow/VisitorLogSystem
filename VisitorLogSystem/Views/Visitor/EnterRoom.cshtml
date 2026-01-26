@@ -1,0 +1,52 @@
+﻿@{
+    ViewData["Title"] = "Record Room Entry";
+}
+
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4>📍 Record Room Entry</h4>
+            </div>
+            <div class="card-body">
+                <h5>Visitor: @ViewBag.VisitorName</h5>
+                <hr />
+
+                <form asp-action="EnterRoom" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="visitorId" value="@ViewBag.VisitorId" />
+
+                    <div class="mb-3">
+                        <label for="roomName" class="form-label">Room Name/Number *</label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="roomName" 
+                               name="roomName" 
+                               placeholder="e.g., Room 101, Conference Room A" 
+                               required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="purpose" class="form-label">Purpose (Optional)</label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="purpose" 
+                               name="purpose" 
+                               placeholder="e.g., Meeting, Work, Delivery" />
+                    </div>
+
+                    <div class="alert alert-info">
+                        <strong>ℹ️ Note:</strong> Entry time will be recorded as current time.
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        ✅ Record Entry
+                    </button>
+                    <a href="@Url.Action("RoomHistory", new { id = ViewBag.VisitorId })" class="btn btn-secondary">
+                        Cancel
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

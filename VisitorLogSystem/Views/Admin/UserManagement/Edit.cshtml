@@ -1,0 +1,97 @@
+﻿@model VisitorLogSystem.ViewModels.Admin.EditUserViewModel
+@{
+    ViewData["Title"] = "Edit User";
+}
+
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h4 class="mb-0">✏️ Edit User: @Model.Username</h4>
+            </div>
+            <div class="card-body">
+                <form asp-action="Edit" asp-route-id="@Model.Id" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <!-- Hidden ID Field -->
+                    <input asp-for="Id" type="hidden" />
+                    <input asp-for="CreatedAt" type="hidden" />
+
+                    <!-- Validation Summary -->
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                    <!-- User Info Display -->
+                    <div class="alert alert-light">
+                        <strong>User ID:</strong> @Model.Id<br />
+                        <strong>Created:</strong> @Model.CreatedAt.ToString("MMMM dd, yyyy hh:mm tt")
+                    </div>
+
+                    <!-- Username Field -->
+                    <div class="mb-3">
+                        <label asp-for="Username" class="form-label"></label>
+                        <input asp-for="Username" class="form-control" />
+                        <span asp-validation-for="Username" class="text-danger"></span>
+                    </div>
+
+                    <!-- Password Section -->
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <strong>🔐 Change Password (Optional)</strong>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted">
+                                Leave password fields empty to keep current password
+                            </p>
+
+                            <!-- New Password Field -->
+                            <div class="mb-3">
+                                <label asp-for="NewPassword" class="form-label"></label>
+                                <input asp-for="NewPassword" class="form-control" placeholder="Enter new password (or leave empty)" />
+                                <span asp-validation-for="NewPassword" class="text-danger"></span>
+                            </div>
+
+                            <!-- Confirm Password Field -->
+                            <div class="mb-3">
+                                <label asp-for="ConfirmPassword" class="form-label"></label>
+                                <input asp-for="ConfirmPassword" class="form-control" placeholder="Confirm new password" />
+                                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Role Selection -->
+                    <div class="mb-3">
+                        <label asp-for="Role" class="form-label"></label>
+                        <select asp-for="Role" class="form-select">
+                            <option value="Staff">Staff</option>
+                            <option value="Admin">Admin</option>
+                        </select>
+                        <span asp-validation-for="Role" class="text-danger"></span>
+                    </div>
+
+                    <!-- Warning for Current User -->
+                    @if (Model.Username == User.Identity!.Name)
+                    {
+                        <div class="alert alert-warning">
+                            ⚠️ <strong>Warning:</strong> You are editing your own account. Be careful with role changes!
+                        </div>
+                    }
+
+                    <!-- Buttons -->
+                    <div class="mb-3">
+                        <button type="submit" class="btn btn-warning">
+                            💾 Update User
+                        </button>
+                        <a href="@Url.Action("Index")" class="btn btn-secondary">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
