@@ -21,12 +21,21 @@ namespace VisitorLogSystem.Services
             _context = context;
         }
 
+        // ✅ ADD THIS METHOD - Synchronous version
+        public IEnumerable<UserDto> GetUsers()
+        {
+            var users = _context.Users
+                .OrderByDescending(u => u.CreatedAt)
+                .ToList();
+            return users.Select(MapToDto);
+        }
+
+        // ✅ KEEP THIS METHOD - Async version
         public async Task<List<UserDto>> GetAllUsersAsync()
         {
             var users = await _context.Users
                 .OrderByDescending(u => u.CreatedAt)
                 .ToListAsync();
-
             return users.Select(MapToDto).ToList();
         }
 
@@ -34,7 +43,6 @@ namespace VisitorLogSystem.Services
         {
             var user = await _userRepository.GetUserByIdAsync(id);
 
-            
             if (user == null)
                 return null;
 
@@ -44,7 +52,6 @@ namespace VisitorLogSystem.Services
         public async Task<UserDto> CreateUserAsync(string username, string password, string role)
         {
             var passwordHash = BCrypt.Net.BCrypt.HashPassword(password);
-
             var user = new User
             {
                 Username = username,
@@ -54,7 +61,6 @@ namespace VisitorLogSystem.Services
             };
 
             var createdUser = await _userRepository.CreateUserAsync(user);
-
             return MapToDto(createdUser);
         }
 
@@ -62,7 +68,6 @@ namespace VisitorLogSystem.Services
         {
             var user = await _userRepository.GetUserByIdAsync(id);
 
-            
             if (user == null)
             {
                 return null;
@@ -78,7 +83,6 @@ namespace VisitorLogSystem.Services
 
             var updatedUser = await _userRepository.UpdateAsync(user);
 
-            
             if (updatedUser == null)
             {
                 return null;
@@ -120,7 +124,6 @@ namespace VisitorLogSystem.Services
         }
 
         #region Helper Methods
-
         private UserDto MapToDto(User user)
         {
             return new UserDto
@@ -131,7 +134,6 @@ namespace VisitorLogSystem.Services
                 CreatedAt = user.CreatedAt
             };
         }
-
         #endregion
     }
 }

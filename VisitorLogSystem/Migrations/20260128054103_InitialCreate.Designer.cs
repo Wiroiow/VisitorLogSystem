@@ -12,7 +12,7 @@ using VisitorLogSystem.Data;
 namespace VisitorLogSystem.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260122055327_InitialCreate")]
+    [Migration("20260128054103_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -25,6 +25,51 @@ namespace VisitorLogSystem.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("VisitorLogSystem.Models.RoomVisit", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<DateTime>("EnteredAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("entered_at");
+
+                    b.Property<string>("Purpose")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("purpose");
+
+                    b.Property<string>("RoomName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("room_name");
+
+                    b.Property<int>("VisitorId")
+                        .HasColumnType("int")
+                        .HasColumnName("visitor_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EnteredAt");
+
+                    b.HasIndex("RoomName");
+
+                    b.HasIndex("VisitorId");
+
+                    b.ToTable("room_visits");
+                });
+
             modelBuilder.Entity("VisitorLogSystem.Models.User", b =>
                 {
                     b.Property<int>("Id")
@@ -35,8 +80,10 @@ namespace VisitorLogSystem.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasColumnName("created_at");
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -57,6 +104,9 @@ namespace VisitorLogSystem.Migrations
                         .HasColumnName("username");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Username")
+                        .IsUnique();
 
                     b.ToTable("users");
                 });
@@ -112,6 +162,22 @@ namespace VisitorLogSystem.Migrations
                     b.HasIndex("TimeIn");
 
                     b.ToTable("visitors");
+                });
+
+            modelBuilder.Entity("VisitorLogSystem.Models.RoomVisit", b =>
+                {
+                    b.HasOne("VisitorLogSystem.Models.Visitor", "Visitor")
+                        .WithMany("RoomVisits")
+                        .HasForeignKey("VisitorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Visitor");
+                });
+
+            modelBuilder.Entity("VisitorLogSystem.Models.Visitor", b =>
+                {
+                    b.Navigation("RoomVisits");
                 });
 #pragma warning restore 612, 618
         }

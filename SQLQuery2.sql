@@ -1,0 +1,1 @@
+﻿SELECT * FROM sys.foreign_keys WHERE name = 'FK_room_visits_rooms_room_id';

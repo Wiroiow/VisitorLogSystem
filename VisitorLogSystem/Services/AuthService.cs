@@ -19,14 +19,17 @@ namespace VisitorLogSystem.Services
     public class AuthService : IAuthService
     {
         private readonly IUserRepository _userRepository;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        
-       
-        
-        public AuthService(IUserRepository userRepository)
+
+
+
+        public AuthService(IUserRepository userRepository, IHttpContextAccessor httpContextAccessor)
         {
             _userRepository = userRepository;
+            _httpContextAccessor = httpContextAccessor;
         }
+
 
         
         /// Validate login credentials
@@ -123,6 +126,15 @@ namespace VisitorLogSystem.Services
             // This is what gets stored in the cookie
             var principal = new ClaimsPrincipal(identity);
             return principal;
+        }
+        public int GetCurrentUserId()
+        {
+            var userIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
+            {
+                return userId;
+            }
+            return 0;
         }
     }
 }

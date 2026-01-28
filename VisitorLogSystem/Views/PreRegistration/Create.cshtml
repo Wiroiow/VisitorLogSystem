@@ -1,0 +1,107 @@
+﻿@model VisitorLogSystem.ViewModels.PreRegistrationViewModel
+
+@{
+    ViewData["Title"] = "Pre-Register Visitor";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h3>@ViewData["Title"]</h3>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post" id="preRegisterForm">
+                        <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="FullName" class="form-label">Full Name *</label>
+                            <input asp-for="FullName" class="form-control" placeholder="Enter visitor's full name" required />
+                            <span asp-validation-for="FullName" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Purpose" class="form-label">Purpose of Visit *</label>
+                            <textarea asp-for="Purpose" class="form-control" rows="3" placeholder="Enter purpose of visit" required></textarea>
+                            <span asp-validation-for="Purpose" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="ExpectedVisitDate" class="form-label">Expected Visit Date *</label>
+                            <input asp-for="ExpectedVisitDate"
+                                   type="datetime-local"
+                                   class="form-control"
+                                   required />
+                            <span asp-validation-for="ExpectedVisitDate" class="text-danger"></span>
+                            <small class="form-text text-muted">Select date and time when visitor is expected</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="HostUserId" class="form-label">Host *</label>
+                            <select asp-for="HostUserId"
+                                    asp-items="@(new SelectList(Model.AvailableHosts, "Id", "Username"))"
+                                    class="form-select"
+                                    required>
+                                <option value="">-- Select Host --</option>
+                            </select>
+                            <span asp-validation-for="HostUserId" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <button type="submit" class="btn btn-primary" id="submitBtn">
+                                <i class="fas fa-save"></i> Pre-Register
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function() {
+            console.log('Page loaded');
+
+            $('#submitBtn').on('click', function(e) {
+                console.log('Submit button clicked');
+            });
+
+            $('#preRegisterForm').on('submit', function(e) {
+                console.log('Form submit event triggered');
+
+                // Get form values
+                var fullName = $('#FullName').val();
+                var purpose = $('#Purpose').val();
+                var expectedDate = $('#ExpectedVisitDate').val();
+                var hostId = $('#HostUserId').val();
+
+                console.log('Form Data:', {
+                    fullName: fullName,
+                    purpose: purpose,
+                    expectedDate: expectedDate,
+                    hostId: hostId
+                });
+
+                // Check if form is valid
+                var isValid = $(this).valid();
+                console.log('Form is valid:', isValid);
+
+                if (!isValid) {
+                    e.preventDefault();
+                    console.log('Form validation failed - submission prevented');
+                    alert('Please fill in all required fields');
+                    return false;
+                }
+
+                console.log('Form is valid - submitting...');
+            });
+        });
+    </script>
+}

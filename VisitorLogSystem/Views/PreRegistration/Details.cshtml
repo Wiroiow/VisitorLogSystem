@@ -1,0 +1,84 @@
+﻿@model VisitorLogSystem.ViewModels.PreRegistrationViewModel
+
+@{
+    ViewData["Title"] = "Pre-Registration Details";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h3>@ViewData["Title"]</h3>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">Full Name:</dt>
+                        <dd class="col-sm-8">@Model.FullName</dd>
+
+                        <dt class="col-sm-4">Purpose:</dt>
+                        <dd class="col-sm-8">@Model.Purpose</dd>
+
+                        <dt class="col-sm-4">Expected Visit Date:</dt>
+                        <dd class="col-sm-8">@Model.ExpectedVisitDate.ToString("MMMM dd, yyyy hh:mm tt")</dd>
+
+                        <dt class="col-sm-4">Host:</dt>
+                        <dd class="col-sm-8">@Model.HostUserName</dd>
+
+                        <dt class="col-sm-4">Status:</dt>
+                        <dd class="col-sm-8">
+                            @if (Model.IsCheckedIn)
+                            {
+                                <span class="badge bg-success">Checked In</span>
+                            }
+                            else if (Model.ExpectedVisitDate < DateTime.Now)
+                            {
+                                <span class="badge bg-warning">Overdue</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-info">Pending</span>
+                            }
+                        </dd>
+
+                        <dt class="col-sm-4">Created At:</dt>
+                        <dd class="col-sm-8">@Model.CreatedAt.ToString("MMMM dd, yyyy hh:mm tt")</dd>
+
+                        @if (Model.IsCheckedIn)
+                        {
+                            <dt class="col-sm-4">Checked In By:</dt>
+                            <dd class="col-sm-8">@Model.CheckedInByUserName</dd>
+
+                            <dt class="col-sm-4">Checked In At:</dt>
+                            <dd class="col-sm-8">@Model.CheckedInAt?.ToString("MMMM dd, yyyy hh:mm tt")</dd>
+
+                            <dt class="col-sm-4">Room Visit:</dt>
+                            <dd class="col-sm-8">
+                                <a asp-controller="RoomVisit" asp-action="Details" asp-route-id="@Model.RoomVisitId" class="btn btn-sm btn-info">
+                                    View Visit #@Model.RoomVisitId
+                                </a>
+                            </dd>
+                        }
+                    </dl>
+
+                    <div class="mt-3">
+                        @if (!Model.IsCheckedIn)
+                        {
+                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            <form asp-action="CheckIn" asp-route-id="@Model.Id" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-success" onclick="return confirm('Check in this visitor?');">
+                                    <i class="fas fa-sign-in-alt"></i> Check In
+                                </button>
+                            </form>
+                        }
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to List
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

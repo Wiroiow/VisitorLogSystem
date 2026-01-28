@@ -13,6 +13,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 
 // ═══════════════════════════════════════════════════════════
+// STEP 1.5: Add HttpContextAccessor (REQUIRED FOR AUTH!)
+// ═══════════════════════════════════════════════════════════
+builder.Services.AddHttpContextAccessor();
+
+// ═══════════════════════════════════════════════════════════
 // STEP 2: Configure Database Connection
 // ═══════════════════════════════════════════════════════════
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -40,25 +45,30 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 
 // ═══════════════════════════════════════════════════════════
 // STEP 4: Register Dependency Injection Services
-// ⚠️ THIS IS WHERE THE FIX IS!
 // ═══════════════════════════════════════════════════════════
 
-// ✅ Visitor Management Services (REQUIRED!)
+// ✅ Visitor Management Services
 builder.Services.AddScoped<IVisitorRepository, VisitorRepository>();
 builder.Services.AddScoped<IVisitorService, VisitorService>();
 
-// ✅ Authentication Services (REQUIRED!)
+// ✅ Authentication Services
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
-// ✅ Admin Services (REQUIRED!)
+// ✅ User Management Services
 builder.Services.AddScoped<IUserManagementService, UserManagementService>();
 
+// ✅ Room Visit Services
 builder.Services.AddScoped<IRoomVisitRepository, RoomVisitRepository>();
 builder.Services.AddScoped<IRoomVisitService, RoomVisitService>();
 
+// ✅ Dashboard Services
 builder.Services.AddScoped<IDashboardRepository, DashboardRepository>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
+
+// ✅ Pre-Registration Services (NEW!)
+builder.Services.AddScoped<IPreRegisteredVisitorRepository, PreRegisteredVisitorRepository>();
+builder.Services.AddScoped<IPreRegisteredVisitorService, PreRegisteredVisitorService>();
 
 // ═══════════════════════════════════════════════════════════
 // STEP 5: Configure Logging
@@ -146,5 +156,6 @@ app.MapControllerRoute(
 Console.WriteLine("🚀 Application started successfully!");
 Console.WriteLine("📊 Default route: Dashboard/Index");
 Console.WriteLine("🔐 Admin login: admin / admin123");
+Console.WriteLine("📋 Pre-Registration: /PreRegistration/Index");
 
 app.Run();

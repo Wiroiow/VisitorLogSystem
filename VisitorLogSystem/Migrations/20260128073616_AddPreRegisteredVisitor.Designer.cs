@@ -12,8 +12,8 @@ using VisitorLogSystem.Data;
 namespace VisitorLogSystem.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260124154204_AddRoomVisitTracking")]
-    partial class AddRoomVisitTracking
+    [Migration("20260128073616_AddPreRegisteredVisitor")]
+    partial class AddPreRegisteredVisitor
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,6 +25,66 @@ namespace VisitorLogSystem.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("VisitorLogSystem.Models.PreRegisteredVisitor", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("CheckedInAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CheckedInByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ExpectedVisitDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("HostUserId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsCheckedIn")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Purpose")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("RoomName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int?>("RoomVisitId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CheckedInByUserId");
+
+                    b.HasIndex("ExpectedVisitDate");
+
+                    b.HasIndex("FullName");
+
+                    b.HasIndex("HostUserId");
+
+                    b.HasIndex("IsCheckedIn");
+
+                    b.HasIndex("RoomVisitId");
+
+                    b.ToTable("PreRegisteredVisitors");
+                });
+
             modelBuilder.Entity("VisitorLogSystem.Models.RoomVisit", b =>
                 {
                     b.Property<int>("Id")
@@ -35,10 +95,8 @@ namespace VisitorLogSystem.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("GETDATE()");
+                        .HasColumnName("created_at");
 
                     b.Property<DateTime>("EnteredAt")
                         .HasColumnType("datetime2")
@@ -61,10 +119,6 @@ namespace VisitorLogSystem.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("EnteredAt");
-
-                    b.HasIndex("RoomName");
-
                     b.HasIndex("VisitorId");
 
                     b.ToTable("room_visits");
@@ -80,10 +134,8 @@ namespace VisitorLogSystem.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("GETDATE()");
+                        .HasColumnName("created_at");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -126,10 +178,8 @@ namespace VisitorLogSystem.Migrations
                         .HasColumnName("contact_number");
 
                     b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("GETDATE()");
+                        .HasColumnName("created_at");
 
                     b.Property<string>("FullName")
                         .IsRequired()
@@ -152,16 +202,39 @@ namespace VisitorLogSystem.Migrations
                         .HasColumnName("time_out");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasColumnName("updated_at")
-                        .HasDefaultValueSql("GETDATE()");
+                        .HasColumnName("updated_at");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TimeIn");
+                    b.HasIndex("FullName");
 
                     b.ToTable("visitors");
+                });
+
+            modelBuilder.Entity("VisitorLogSystem.Models.PreRegisteredVisitor", b =>
+                {
+                    b.HasOne("VisitorLogSystem.Models.User", "CheckedInByUser")
+                        .WithMany()
+                        .HasForeignKey("CheckedInByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("VisitorLogSystem.Models.User", "HostUser")
+                        .WithMany()
+                        .HasForeignKey("HostUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("VisitorLogSystem.Models.RoomVisit", "RoomVisit")
+                        .WithMany()
+                        .HasForeignKey("RoomVisitId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("CheckedInByUser");
+
+                    b.Navigation("HostUser");
+
+                    b.Navigation("RoomVisit");
                 });
 
             modelBuilder.Entity("VisitorLogSystem.Models.RoomVisit", b =>
@@ -169,7 +242,7 @@ namespace VisitorLogSystem.Migrations
                     b.HasOne("VisitorLogSystem.Models.Visitor", "Visitor")
                         .WithMany("RoomVisits")
                         .HasForeignKey("VisitorId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Visitor");
