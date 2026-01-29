@@ -55,7 +55,7 @@ namespace VisitorLogSystem.Repositories
                 .ToList();
         }
 
-        public PreRegisteredVisitor GetById(int id)
+        public PreRegisteredVisitor? GetById(int id)
         {
             return _context.PreRegisteredVisitors
                 .Include(p => p.HostUser)

@@ -10,7 +10,7 @@ namespace VisitorLogSystem.Interfaces
         IEnumerable<PreRegisteredVisitor> GetPendingVisitors();
         IEnumerable<PreRegisteredVisitor> GetPendingVisitorsByDate(DateTime date);
         IEnumerable<PreRegisteredVisitor> GetByHostUserId(int hostUserId);
-        PreRegisteredVisitor GetById(int id);
+        PreRegisteredVisitor? GetById(int id);
         PreRegisteredVisitor Add(PreRegisteredVisitor preRegisteredVisitor);
         PreRegisteredVisitor Update(PreRegisteredVisitor preRegisteredVisitor);
         void Delete(int id);

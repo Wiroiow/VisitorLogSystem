@@ -48,7 +48,7 @@ namespace VisitorLogSystem.Services
             return preRegistrations.Select(MapToDto);
         }
 
-        public PreRegisteredVisitorDto GetById(int id)
+        public PreRegisteredVisitorDto? GetById(int id)
         {
             var preRegistration = _preRegRepository.GetById(id);
             return preRegistration != null ? MapToDto(preRegistration) : null;
@@ -59,7 +59,7 @@ namespace VisitorLogSystem.Services
             var preRegistration = new PreRegisteredVisitor
             {
                 FullName = dto.FullName,
-                Purpose = dto.Purpose,
+                Purpose = dto.Purpose?? string.Empty,
                 ExpectedVisitDate = dto.ExpectedVisitDate,
                 HostUserId = dto.HostUserId,
                 IsCheckedIn = false,
@@ -84,7 +84,7 @@ namespace VisitorLogSystem.Services
             }
 
             existing.FullName = dto.FullName;
-            existing.Purpose = dto.Purpose;
+            existing.Purpose = dto.Purpose ?? string.Empty;
             existing.ExpectedVisitDate = dto.ExpectedVisitDate;
             existing.HostUserId = dto.HostUserId;
 
@@ -163,6 +163,10 @@ namespace VisitorLogSystem.Services
             // Return the created RoomVisit as DTO
             var roomVisitWithRelations = await _roomVisitRepository.GetByIdAsync(roomVisit.Id);
 
+            if (roomVisitWithRelations == null)
+            {
+                throw new Exception("Failed to retrieve room visit after creation");
+            }
             // Your RoomVisit model doesn't have CreatedByUser, so we'll use available data
             return new RoomVisitDto
             {

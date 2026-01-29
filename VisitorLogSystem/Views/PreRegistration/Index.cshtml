@@ -62,7 +62,8 @@
 
     <div class="card">
         <div class="card-body">
-            @if (Model.PreRegistrations.Any())
+            @* ✅ Fixed: Added null check *@
+            @if (Model?.PreRegistrations != null && Model.PreRegistrations.Any())
             {
                 <div class="table-responsive">
                     <table class="table table-striped table-hover">
@@ -82,9 +83,9 @@
                             {
                                 <tr>
                                     <td>@item.FullName</td>
-                                    <td>@item.Purpose</td>
+                                    <td>@(item.Purpose ?? "N/A")</td>
                                     <td>@item.ExpectedVisitDate.ToString("MMM dd, yyyy hh:mm tt")</td>
-                                    <td>@item.HostUserName</td>
+                                    <td>@(item.HostUserName ?? "Not Assigned")</td>
                                     <td>
                                         @if (item.IsCheckedIn)
                                         {

@@ -23,7 +23,7 @@ namespace VisitorLogSystem.Models
         public int HostUserId { get; set; }
 
         [ForeignKey("HostUserId")]
-        public required User HostUser { get; set; }
+        public User? HostUser { get; set; } 
 
         public bool IsCheckedIn { get; set; }
 
@@ -33,7 +33,7 @@ namespace VisitorLogSystem.Models
         public int? CheckedInByUserId { get; set; }
 
         [ForeignKey("CheckedInByUserId")]
-        public required User CheckedInByUser { get; set; }
+        public User? CheckedInByUser { get; set; }
 
         public DateTime? CheckedInAt { get; set; }
 
@@ -41,7 +41,7 @@ namespace VisitorLogSystem.Models
         public int? RoomVisitId { get; set; }
 
         [ForeignKey("RoomVisitId")]
-        public required RoomVisit RoomVisit { get; set; }
+        public RoomVisit? RoomVisit { get; set; }
 
         [MaxLength(100)]
         public string? RoomName { get; set; }
