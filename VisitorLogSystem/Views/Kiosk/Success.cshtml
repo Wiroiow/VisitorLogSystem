@@ -1,0 +1,92 @@
+﻿@model VisitorLogSystem.ViewModels.KioskSuccessViewModel
+@{
+    ViewData["Title"] = "Check-In Successful";
+    Layout = "~/Views/Shared/_KioskLayout.cshtml";
+}
+
+<div class="kiosk-success-container">
+    <div class="text-center">
+        <div class="success-icon-wrapper">
+            <i class="bi bi-check-circle-fill text-success"></i>
+        </div>
+
+        <h1 class="display-4 fw-bold text-success mb-4">
+            Check-In Successful!
+        </h1>
+
+        <div class="success-details-card">
+            <div class="mb-4">
+                <p class="text-muted mb-2 fs-5">Visitor Name</p>
+                <h3 class="fw-bold">@Model.FullName</h3>
+            </div>
+
+            <hr class="my-4">
+
+            <div class="row text-center mb-4">
+                <div class="col-md-6 mb-3">
+                    <p class="text-muted mb-2">
+                        <i class="bi bi-door-closed-fill me-2"></i>Room
+                    </p>
+                    <h4 class="fw-bold">@Model.RoomName</h4>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <p class="text-muted mb-2">
+                        <i class="bi bi-clock-fill me-2"></i>Time In
+                    </p>
+                    <h4 class="fw-bold">@Model.CheckInTime.ToString("hh:mm tt")</h4>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <p class="text-muted mb-2">
+                    <i class="bi bi-chat-left-text-fill me-2"></i>Purpose
+                </p>
+                <p class="fs-5">@Model.Purpose</p>
+            </div>
+
+            @if (Model.WasPreRegistered)
+            {
+                <div class="alert alert-info kiosk-alert">
+                    <i class="bi bi-info-circle-fill me-2"></i>
+                    <strong>Pre-Registered Visitor</strong>
+                </div>
+            }
+        </div>
+
+        <div class="mt-5">
+            <p class="lead fs-4 mb-4">
+                Please proceed to <strong>@Model.RoomName</strong>
+            </p>
+
+            <p class="text-muted fs-5 mb-5">
+                This screen will automatically return to the welcome page
+            </p>
+
+            <a asp-action="Welcome" class="btn btn-primary btn-kiosk">
+                <i class="bi bi-house-fill me-3"></i>
+                Return to Welcome Screen
+            </a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Auto-redirect to welcome screen after 10 seconds
+        setTimeout(function() {
+            window.location.href = '@Url.Action("Welcome", "Kiosk")';
+        }, 10000);
+
+        // Show countdown
+        let countdown = 10;
+        setInterval(function() {
+            countdown--;
+            if (countdown > 0) {
+                const countdownText = document.querySelector('.text-muted.fs-5.mb-5');
+                if (countdownText) {
+                    countdownText.innerHTML = `This screen will automatically return to the welcome page in <strong>${countdown}</strong> seconds`;
+                }
+            }
+        }, 1000);
+    </script>
+}

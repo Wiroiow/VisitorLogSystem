@@ -52,7 +52,8 @@ namespace VisitorLogSystem.Data
                 .HasOne(p => p.RoomVisit)
                 .WithMany()
                 .HasForeignKey(p => p.RoomVisitId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.SetNull)
+                .IsRequired(false);
 
             modelBuilder.Entity<PreRegisteredVisitor>()
                 .HasIndex(p => p.FullName);

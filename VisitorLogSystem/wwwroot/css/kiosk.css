@@ -1,0 +1,266 @@
+﻿/* ========================================
+   KIOSK MODE - TOUCH-FRIENDLY STYLES
+   ======================================== */
+
+/* === BODY & LAYOUT === */
+.kiosk-body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow-x: hidden;
+}
+
+.kiosk-header {
+    background-color: rgba(255, 255, 255, 0.95);
+    padding: 1.5rem 0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+    .kiosk-header h4 {
+        color: #333;
+        font-weight: 600;
+    }
+
+.kiosk-main {
+    padding: 3rem 0;
+    min-height: calc(100vh - 180px);
+}
+
+.kiosk-footer {
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 1.5rem 0;
+    margin-top: auto;
+}
+
+/* === CONTAINERS === */
+.kiosk-welcome-container,
+.kiosk-form-container,
+.kiosk-success-container {
+    background-color: #ffffff;
+    border-radius: 30px;
+    padding: 4rem 3rem;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    max-width: 800px;
+    margin: 0 auto;
+    animation: slideIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* === WELCOME SCREEN === */
+.welcome-icon {
+    font-size: 150px;
+    color: #667eea;
+    margin-bottom: 2rem;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+/* === ICONS === */
+.kiosk-header-icon {
+    font-size: 80px;
+    display: block;
+    margin-bottom: 1.5rem;
+}
+
+.success-icon-wrapper {
+    font-size: 120px;
+    margin-bottom: 2rem;
+    animation: scaleIn 0.6s ease-out;
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0);
+    }
+
+    to {
+        transform: scale(1);
+    }
+}
+
+/* === BUTTONS - TOUCH OPTIMIZED === */
+.btn-kiosk {
+    font-size: 1.5rem !important;
+    padding: 1.5rem 2.5rem !important;
+    border-radius: 15px !important;
+    font-weight: 600 !important;
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    border: none !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+    .btn-kiosk:hover,
+    .btn-kiosk:focus {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn-kiosk:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+
+.btn-kiosk-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-kiosk-back {
+    min-height: 65px;
+    font-size: 1.2rem !important;
+}
+
+/* === FORM CONTROLS - TOUCH OPTIMIZED === */
+.form-control-kiosk,
+.form-select {
+    font-size: 1.4rem !important;
+    padding: 1.2rem 1.5rem !important;
+    border-radius: 12px !important;
+    border: 2px solid #ddd !important;
+    min-height: 70px;
+    transition: all 0.3s ease;
+}
+
+    .form-control-kiosk:focus,
+    .form-select:focus {
+        border-color: #667eea !important;
+        box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25) !important;
+        transform: scale(1.02);
+    }
+
+textarea.form-control-kiosk {
+    min-height: 150px;
+    resize: none;
+}
+
+.form-label.kiosk-label {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.8rem;
+}
+
+/* === VALIDATION & ALERTS === */
+.kiosk-error {
+    font-size: 1.1rem !important;
+    display: block;
+    margin-top: 0.5rem;
+    font-weight: 500;
+}
+
+.kiosk-alert {
+    font-size: 1.2rem;
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+}
+
+/* === SUCCESS SCREEN === */
+.success-details-card {
+    background-color: #f8f9fa;
+    border-radius: 20px;
+    padding: 3rem;
+    margin: 2rem 0;
+}
+
+    .success-details-card h3,
+    .success-details-card h4 {
+        color: #333;
+    }
+
+    .success-details-card .text-muted {
+        color: #6c757d !important;
+        font-weight: 500;
+    }
+
+    .success-details-card hr {
+        border-top: 2px solid #dee2e6;
+        margin: 2rem 0;
+    }
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+    .kiosk-welcome-container,
+    .kiosk-form-container,
+    .kiosk-success-container {
+        padding: 3rem 2rem;
+        border-radius: 20px;
+    }
+
+    .welcome-icon {
+        font-size: 100px;
+    }
+
+    .kiosk-header-icon {
+        font-size: 60px;
+    }
+
+    .btn-kiosk {
+        font-size: 1.3rem !important;
+        padding: 1.2rem 2rem !important;
+        min-height: 70px;
+    }
+
+    .form-control-kiosk,
+    .form-select {
+        font-size: 1.2rem !important;
+        min-height: 60px;
+    }
+
+    .form-label.kiosk-label {
+        font-size: 1.1rem;
+    }
+}
+
+/* === ACCESSIBILITY === */
+.btn-kiosk:focus-visible,
+.form-control-kiosk:focus-visible,
+.form-select:focus-visible {
+    outline: 3px solid #667eea;
+    outline-offset: 3px;
+}
+
+/* === PREVENT TEXT SELECTION (Kiosk Mode) === */
+.kiosk-body {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* Allow selection in input fields */
+input,
+textarea,
+select {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}

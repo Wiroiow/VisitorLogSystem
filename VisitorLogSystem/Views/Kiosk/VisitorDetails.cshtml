@@ -1,0 +1,128 @@
+﻿@model VisitorLogSystem.ViewModels.KioskCheckInViewModel
+@{
+    ViewData["Title"] = "Visitor Details";
+    Layout = "~/Views/Shared/_KioskLayout.cshtml";
+    var availableRooms = ViewBag.AvailableRooms as string[] ?? Array.Empty<string>();
+}
+
+<div class="kiosk-form-container">
+    <div class="text-center mb-5">
+        @if (Model.IsPreRegistered)
+        {
+            <i class="bi bi-person-check-fill kiosk-header-icon text-success"></i>
+            <h2 class="display-5 fw-bold text-success">Welcome Back!</h2>
+            <p class="lead fs-4 text-muted">We found your pre-registration</p>
+        }
+        else
+        {
+            <i class="bi bi-person-plus-fill kiosk-header-icon text-primary"></i>
+            <h2 class="display-5 fw-bold">Visitor Information</h2>
+            <p class="lead fs-4 text-muted">Please complete your details</p>
+        }
+    </div>
+
+    <form asp-action="VisitorDetails" method="post" class="kiosk-form">
+        @Html.AntiForgeryToken()
+
+        <!-- Hidden fields for pre-registration -->
+        <input type="hidden" asp-for="PreRegistrationId" />
+        <input type="hidden" asp-for="IsPreRegistered" />
+        <input type="hidden" asp-for="HostUserId" />
+
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger kiosk-alert" role="alert"></div>
+
+        <!-- Full Name -->
+        <div class="mb-4">
+            <label asp-for="FullName" class="form-label kiosk-label">
+                <i class="bi bi-person-fill me-2"></i>Full Name *
+            </label>
+            @if (Model.IsPreRegistered)
+            {
+                <input asp-for="FullName"
+                       class="form-control form-control-kiosk"
+                       placeholder="Enter your full name"
+                       readonly
+                       autocomplete="off" />
+            }
+            else
+            {
+                <input asp-for="FullName"
+                       class="form-control form-control-kiosk"
+                       placeholder="Enter your full name"
+                       autocomplete="off" />
+            }
+            <span asp-validation-for="FullName" class="text-danger kiosk-error"></span>
+        </div>
+
+        <!-- Contact Number -->
+        <div class="mb-4">
+            <label asp-for="ContactNumber" class="form-label kiosk-label">
+                <i class="bi bi-telephone-fill me-2"></i>Contact Number
+            </label>
+            <input asp-for="ContactNumber"
+                   class="form-control form-control-kiosk"
+                   placeholder="Enter your phone number (optional)"
+                   type="tel"
+                   autocomplete="off" />
+            <span asp-validation-for="ContactNumber" class="text-danger kiosk-error"></span>
+        </div>
+
+        <!-- Purpose -->
+        <div class="mb-4">
+            <label asp-for="Purpose" class="form-label kiosk-label">
+                <i class="bi bi-chat-left-text-fill me-2"></i>Purpose of Visit *
+            </label>
+            @if (Model.IsPreRegistered && !string.IsNullOrEmpty(Model.PreRegPurpose))
+            {
+                <textarea asp-for="Purpose"
+                          class="form-control form-control-kiosk"
+                          rows="3"
+                          placeholder="Brief description of your visit"
+                          readonly
+                          autocomplete="off"></textarea>
+            }
+            else
+            {
+                <textarea asp-for="Purpose"
+                          class="form-control form-control-kiosk"
+                          rows="3"
+                          placeholder="Brief description of your visit"
+                          autocomplete="off"></textarea>
+            }
+            <span asp-validation-for="Purpose" class="text-danger kiosk-error"></span>
+        </div>
+
+        <!-- Room Selection -->
+        <div class="mb-5">
+            <label asp-for="RoomName" class="form-label kiosk-label">
+                <i class="bi bi-door-closed-fill me-2"></i>Select Room *
+            </label>
+            <select asp-for="RoomName" class="form-select form-control-kiosk">
+                <option value="">-- Select a room --</option>
+                @foreach (var room in availableRooms)
+                {
+                    <option value="@room">@room</option>
+                }
+            </select>
+            <span asp-validation-for="RoomName" class="text-danger kiosk-error"></span>
+        </div>
+
+        <div class="d-grid gap-3">
+            <button type="submit" class="btn btn-success btn-kiosk btn-kiosk-primary">
+                <i class="bi bi-check-circle-fill me-3"></i>
+                Complete Check-In
+            </button>
+
+            <a asp-action="PreRegLookup" class="btn btn-outline-danger btn-kiosk-back">
+                <i class="bi bi-arrow-left me-2"></i>
+                Back
+            </a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

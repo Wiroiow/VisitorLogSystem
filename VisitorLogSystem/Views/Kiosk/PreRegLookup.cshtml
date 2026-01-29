@@ -1,0 +1,53 @@
+﻿@model VisitorLogSystem.ViewModels.KioskPreRegLookupViewModel
+@{
+    ViewData["Title"] = "Are You Pre-Registered?";
+    Layout = "~/Views/Shared/_KioskLayout.cshtml";
+}
+
+<div class="kiosk-form-container">
+    <div class="text-center mb-5">
+        <i class="bi bi-calendar-check-fill kiosk-header-icon text-primary"></i>
+        <h2 class="display-5 fw-bold">Are You Pre-Registered?</h2>
+        <p class="lead fs-4 text-muted">Enter your name to check</p>
+    </div>
+
+    <form asp-action="PreRegLookup" method="post" class="kiosk-form">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger kiosk-alert" role="alert"></div>
+
+        <div class="mb-5">
+            <label asp-for="FullName" class="form-label kiosk-label">
+                <i class="bi bi-person-fill me-2"></i>Full Name
+            </label>
+            <input asp-for="FullName"
+                   class="form-control form-control-kiosk"
+                   placeholder="Enter your full name"
+                   autofocus
+                   autocomplete="off" />
+            <span asp-validation-for="FullName" class="text-danger kiosk-error"></span>
+        </div>
+
+        <div class="d-grid gap-3">
+            <button type="submit" class="btn btn-primary btn-kiosk">
+                <i class="bi bi-search me-3"></i>
+                Check Pre-Registration
+            </button>
+
+            <a asp-action="SkipPreReg" class="btn btn-outline-secondary btn-kiosk">
+                <i class="bi bi-skip-forward-fill me-3"></i>
+                Skip - I'm a Walk-In Visitor
+            </a>
+
+            <a asp-action="Welcome" class="btn btn-outline-danger btn-kiosk-back">
+                <i class="bi bi-arrow-left me-2"></i>
+                Back to Welcome
+            </a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
