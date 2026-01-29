@@ -29,15 +29,15 @@ namespace VisitorLogSystem.Models
 
         public DateTime CreatedAt { get; set; }
 
-        // Optional: Track who actually checked them in
+        
         public int? CheckedInByUserId { get; set; }
 
         [ForeignKey("CheckedInByUserId")]
         public User? CheckedInByUser { get; set; }
 
-        public DateTime? CheckedInAt { get; set; }
+        public DateTime CheckedInAt { get; set; }
 
-        // Optional: Link to the created RoomVisit
+        
         public int? RoomVisitId { get; set; }
 
         [ForeignKey("RoomVisitId")]

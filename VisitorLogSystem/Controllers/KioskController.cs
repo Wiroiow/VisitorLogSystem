@@ -8,11 +8,7 @@ using VisitorLogSystem.ViewModels;
 
 namespace VisitorLogSystem.Controllers
 {
-    /// <summary>
-    /// Self-Service Kiosk Controller
-    /// PUBLIC ACCESS - No authentication required
-    /// Reuses existing Services for all business logic
-    /// </summary>
+    
     public class KioskController : Controller
     {
         private readonly IVisitorService _visitorService;
@@ -31,10 +27,7 @@ namespace VisitorLogSystem.Controllers
 
         #region Screen 1: Welcome Screen
 
-        /// <summary>
-        /// GET: /Kiosk/Welcome
-        /// Entry point for kiosk mode
-        /// </summary>
+      
         [HttpGet]
         public IActionResult Welcome()
         {
@@ -45,20 +38,14 @@ namespace VisitorLogSystem.Controllers
 
         #region Screen 2: Pre-Registration Lookup
 
-        /// <summary>
-        /// GET: /Kiosk/PreRegLookup
-        /// Screen to check if visitor is pre-registered
-        /// </summary>
+      
         [HttpGet]
         public IActionResult PreRegLookup()
         {
             return View(new KioskPreRegLookupViewModel());
         }
 
-        /// <summary>
-        /// POST: /Kiosk/PreRegLookup
-        /// Search for pre-registration by name
-        /// </summary>
+        
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult PreRegLookup(KioskPreRegLookupViewModel model)
@@ -68,7 +55,7 @@ namespace VisitorLogSystem.Controllers
                 return View(model);
             }
 
-            // Search for pending pre-registrations matching the name
+            
             var preRegistrations = _preRegService.SearchPending(model.FullName);
             var matchingPreReg = preRegistrations
                 .Where(pr => pr.ExpectedVisitDate.Date == DateTime.Today)
@@ -76,18 +63,15 @@ namespace VisitorLogSystem.Controllers
 
             if (matchingPreReg != null)
             {
-                // Found pre-registration - pre-fill visitor details
+                
                 return RedirectToAction(nameof(VisitorDetails), new { preRegId = matchingPreReg.Id });
             }
 
-            // Not pre-registered - proceed as walk-in visitor
+            
             return RedirectToAction(nameof(VisitorDetails));
         }
 
-        /// <summary>
-        /// GET: /Kiosk/SkipPreReg
-        /// Allow visitors to skip pre-registration lookup
-        /// </summary>
+        
         [HttpGet]
         public IActionResult SkipPreReg()
         {
@@ -98,10 +82,7 @@ namespace VisitorLogSystem.Controllers
 
         #region Screen 3: Visitor Details + Room Selection
 
-        /// <summary>
-        /// GET: /Kiosk/VisitorDetails
-        /// Combined screen for visitor info and room selection
-        /// </summary>
+        
         [HttpGet]
         public IActionResult VisitorDetails(int? preRegId)
         {
@@ -120,22 +101,19 @@ namespace VisitorLogSystem.Controllers
                     model.Purpose = preReg.Purpose ?? string.Empty;
                     model.HostUserId = preReg.HostUserId;
 
-                    // Pre-fill room if available in PreRegisteredVisitor model
-                    // Note: Your model has RoomName field but it's not being set in PreRegistrationService
-                    // You may want to add this field to pre-registration form later
+                   
                 }
             }
 
-            // Populate available rooms
+           
             ViewBag.AvailableRooms = GetAvailableRooms();
 
             return View(model);
         }
 
-        /// <summary>
-        /// POST: /Kiosk/VisitorDetails
-        /// Process check-in
-        /// </summary>
+       
+        /// Process check-in with duplicate detection
+       
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> VisitorDetails(KioskCheckInViewModel model)
@@ -154,9 +132,7 @@ namespace VisitorLogSystem.Controllers
                 // CASE 1: Pre-registered visitor
                 if (model.IsPreRegistered && model.PreRegistrationId.HasValue)
                 {
-                    // Use existing PreRegisteredVisitorService.CheckInPreRegisteredVisitorAsync
-                    // Note: This requires a userId - we'll use a system kiosk user ID
-                    const int KIOSK_SYSTEM_USER_ID = 1; // You may want to create a dedicated "Kiosk" user
+                    const int KIOSK_SYSTEM_USER_ID = 1; 
 
                     var roomVisitDto = await _preRegService.CheckInPreRegisteredVisitorAsync(
                         model.PreRegistrationId.Value,
@@ -166,33 +142,48 @@ namespace VisitorLogSystem.Controllers
                     visitorId = roomVisitDto.VisitorId;
                     roomVisitId = roomVisitDto.Id;
 
-                    // Update contact number if provided
-                    if (!string.IsNullOrWhiteSpace(model.ContactNumber))
+                    //Update contact info if provided
+                    var visitorDto = await _visitorService.GetVisitorByIdAsync(visitorId);
+                    if (visitorDto != null)
                     {
-                        var visitorDto = await _visitorService.GetVisitorByIdAsync(visitorId);
-                        if (visitorDto != null)
+                        bool needsUpdate = false;
+
+                        if (!string.IsNullOrWhiteSpace(model.ContactNumber))
                         {
                             visitorDto.ContactNumber = model.ContactNumber;
+                            needsUpdate = true;
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(model.Email))
+                        {
+                            visitorDto.Email = model.Email;
+                            needsUpdate = true;
+                        }
+
+                        if (needsUpdate)
+                        {
                             await _visitorService.UpdateVisitorAsync(visitorDto);
                         }
                     }
                 }
-                // CASE 2: Walk-in visitor
+                // CASE 2: Walk-in visitor (with duplicate detection)
                 else
                 {
-                    // Create new visitor using VisitorService
-                    var newVisitor = new VisitorDto
+                    //Use FindOrCreateVisitor to prevent duplicates
+                    var visitorDto = new VisitorDto
                     {
                         FullName = model.FullName,
                         Purpose = model.Purpose,
                         ContactNumber = model.ContactNumber,
+                        Email = model.Email, // ✅ NEW
                         TimeIn = DateTime.Now
                     };
 
-                    var createdVisitor = await _visitorService.CreateVisitorAsync(newVisitor);
-                    visitorId = createdVisitor.Id;
+                    // This will find existing visitor by email or create new
+                    var visitor = await _visitorService.FindOrCreateVisitorAsync(visitorDto);
+                    visitorId = visitor.Id;
 
-                    // Create room visit using RoomVisitService
+                   
                     var roomVisitDto = await _roomVisitService.RecordRoomEntryAsync(
                         visitorId,
                         model.RoomName,
@@ -202,7 +193,7 @@ namespace VisitorLogSystem.Controllers
                     roomVisitId = roomVisitDto.Id;
                 }
 
-                // Redirect to success screen
+                
                 return RedirectToAction(nameof(Success), new
                 {
                     name = model.FullName,
@@ -219,15 +210,12 @@ namespace VisitorLogSystem.Controllers
                 return View(model);
             }
         }
-
         #endregion
 
         #region Screen 4: Success Confirmation
 
-        /// <summary>
-        /// GET: /Kiosk/Success
-        /// Show check-in confirmation
-        /// </summary>
+        
+        
         [HttpGet]
         public IActionResult Success(string name, string room, string purpose, bool wasPreReg = false)
         {
@@ -247,10 +235,7 @@ namespace VisitorLogSystem.Controllers
 
         #region Helper Methods
 
-        /// <summary>
-        /// Get list of available rooms for dropdown
-        /// TODO: Move this to a configuration file or database table
-        /// </summary>
+       
         private string[] GetAvailableRooms()
         {
             return new[]

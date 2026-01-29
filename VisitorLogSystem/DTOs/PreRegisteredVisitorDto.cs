@@ -14,7 +14,7 @@ namespace VisitorLogSystem.DTOs
         public DateTime CreatedAt { get; set; }
         public int? CheckedInByUserId { get; set; }
         public string? CheckedInByUserName { get; set; } 
-        public DateTime? CheckedInAt { get; set; }
+        public DateTime CheckedInAt { get; set; }
         public int? RoomVisitId { get; set; }
     }
 }

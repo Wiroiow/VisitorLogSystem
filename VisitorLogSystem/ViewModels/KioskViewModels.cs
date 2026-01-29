@@ -3,9 +3,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace VisitorLogSystem.ViewModels
 {
-    /// <summary>
+   
     /// ViewModel for pre-registration lookup screen
-    /// </summary>
+   
     public class KioskPreRegLookupViewModel
     {
         [Required(ErrorMessage = "Please enter your full name")]
@@ -13,19 +13,19 @@ namespace VisitorLogSystem.ViewModels
         public string FullName { get; set; } = string.Empty;
     }
 
-    /// <summary>
+   
     /// ViewModel for visitor details + room selection (combined screen)
-    /// </summary>
+    
     public class KioskCheckInViewModel
     {
-        // Pre-registration info (if found)
+        
         public int? PreRegistrationId { get; set; }
         public bool IsPreRegistered { get; set; }
         public string? PreRegPurpose { get; set; }
         public string? PreRegRoomName { get; set; }
         public int? HostUserId { get; set; }
 
-        // Visitor details
+        
         [Required(ErrorMessage = "Full name is required")]
         [StringLength(200, ErrorMessage = "Name cannot exceed 200 characters")]
         public string FullName { get; set; } = string.Empty;
@@ -38,14 +38,18 @@ namespace VisitorLogSystem.ViewModels
         [StringLength(20, ErrorMessage = "Contact number cannot exceed 20 characters")]
         public string? ContactNumber { get; set; }
 
+        
+        [EmailAddress(ErrorMessage = "Please enter a valid email address")]
+        [StringLength(100, ErrorMessage = "Email cannot exceed 100 characters")]
+        public string? Email { get; set; }
+
         [Required(ErrorMessage = "Please select a room")]
         [StringLength(100)]
         public string RoomName { get; set; } = string.Empty;
     }
 
-    /// <summary>
     /// ViewModel for success confirmation screen
-    /// </summary>
+   
     public class KioskSuccessViewModel
     {
         public string FullName { get; set; } = string.Empty;

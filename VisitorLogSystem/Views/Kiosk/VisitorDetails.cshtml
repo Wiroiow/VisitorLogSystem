@@ -66,6 +66,26 @@
                    autocomplete="off" />
             <span asp-validation-for="ContactNumber" class="text-danger kiosk-error"></span>
         </div>
+        <div class="mb-4">
+            <label asp-for="Email" class="form-label kiosk-label">
+                <i class="bi bi-envelope-fill me-2"></i>Email Address
+            </label>
+            <input asp-for="Email"
+                   class="form-control form-control-kiosk"
+                   placeholder="your.email@example.com (optional)"
+                   type="email"
+                   autocomplete="off" />
+            <span asp-validation-for="Email" class="text-danger kiosk-error"></span>
+            <small class="text-muted d-block mt-2" style="font-size: 1rem;">
+                💡 Providing your email helps us recognize you on future visits
+            </small>
+        </div>
+        <div class="form-group mb-3">
+            <label asp-for="Email" class="control-label">Email Address</label>
+            <input asp-for="Email" class="form-control" type="email" placeholder="visitor@example.com" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+            <small class="form-text text-muted">Optional - Helps prevent duplicate records</small>
+        </div>
 
         <!-- Purpose -->
         <div class="mb-4">

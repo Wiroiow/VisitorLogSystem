@@ -30,10 +30,10 @@ namespace VisitorLogSystem.ViewModels
         public bool IsCheckedIn { get; set; }
         public DateTime CreatedAt { get; set; }
         public string? CheckedInByUserName { get; set; }
-        public DateTime? CheckedInAt { get; set; } 
+        public DateTime CheckedInAt { get; set; } 
         public int? RoomVisitId { get; set; }
 
-        // For dropdowns
+        
         public List<UserDto>? AvailableHosts{ get; set; } 
     }
 

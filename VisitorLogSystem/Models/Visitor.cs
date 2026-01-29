@@ -26,6 +26,12 @@ namespace VisitorLogSystem.Models
         [MaxLength(20)]
         public string? ContactNumber { get; set; }
 
+        
+        [Column("email")]
+        [MaxLength(100)]
+        [EmailAddress]
+        public string? Email { get; set; }
+
         [Required]
         [Column("time_in")]
         public DateTime TimeIn { get; set; }
@@ -39,27 +45,27 @@ namespace VisitorLogSystem.Models
         [Column("updated_at")]
         public DateTime UpdatedAt { get; set; }
 
-      
-        /// This represents ALL room visits made by this visitor
+     
         /// Entity Framework uses this to establish the one-to-many relationship
        
         public virtual ICollection<RoomVisit> RoomVisits { get; set; } = new List<RoomVisit>();
 
-       
-        /// Helper property to check if visitor is still in the building
         
+       
         [NotMapped]
         public bool IsCurrentlyInBuilding => TimeOut == null;
 
         
-        /// Helper property to get display-friendly contact number
         
         [NotMapped]
         public string DisplayContactNumber => ContactNumber ?? "Not provided";
 
-       
-        /// Helper property to get total room visits count
-       
+        
+        
+        [NotMapped]
+        public string DisplayEmail => Email ?? "Not provided";
+
+        
         [NotMapped]
         public int RoomVisitCount => RoomVisits?.Count ?? 0;
     }
