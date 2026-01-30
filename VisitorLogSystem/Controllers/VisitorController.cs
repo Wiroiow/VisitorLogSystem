@@ -64,11 +64,13 @@ namespace VisitorLogSystem.Controllers
                 visitor.CreatedAt = DateTime.Now;
                 visitor.UpdatedAt = DateTime.Now;
 
-                // Set TimeIn to now if not specified
+               
                 if (visitor.TimeIn == default)
                 {
                     visitor.TimeIn = DateTime.Now;
                 }
+
+                visitor.TimeOut = null;
 
                 _context.Add(visitor);
                 await _context.SaveChangesAsync();
@@ -105,11 +107,24 @@ namespace VisitorLogSystem.Controllers
                 return NotFound();
             }
 
-            // Remove TimeOut from ModelState if it's empty (to allow null values)
-            if (string.IsNullOrWhiteSpace(Request.Form["TimeOut"]))
+            var timeOutFormValue = Request.Form["TimeOut"].ToString();
+            if (string.IsNullOrWhiteSpace(timeOutFormValue))
             {
                 ModelState.Remove("TimeOut");
-                visitor.TimeOut = null;
+                visitor.TimeOut = null; 
+            }
+            else
+            {
+                
+                if (DateTime.TryParse(timeOutFormValue, out DateTime parsedTimeOut))
+                {
+                    visitor.TimeOut = parsedTimeOut;
+                }
+                else
+                {
+                    ModelState.Remove("TimeOut");
+                    visitor.TimeOut = null;
+                }
             }
 
             if (ModelState.IsValid)
@@ -136,7 +151,7 @@ namespace VisitorLogSystem.Controllers
                 }
             }
 
-            // If we got here, something failed, redisplay form
+         
             return View(visitor);
         }
 

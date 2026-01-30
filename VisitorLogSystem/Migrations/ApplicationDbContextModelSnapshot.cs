@@ -164,49 +164,45 @@ namespace VisitorLogSystem.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("id");
+                        .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ContactNumber")
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)")
-                        .HasColumnName("contact_number");
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("created_at");
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("FullName")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)")
-                        .HasColumnName("full_name");
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("Purpose")
                         .IsRequired()
                         .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)")
-                        .HasColumnName("purpose");
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<DateTime>("TimeIn")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("time_in");
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("TimeOut")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("time_out");
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("updated_at");
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
                     b.HasIndex("FullName");
 
-                    b.ToTable("visitors");
+                    b.ToTable("Visitors");
                 });
 
             modelBuilder.Entity("VisitorLogSystem.Models.PreRegisteredVisitor", b =>

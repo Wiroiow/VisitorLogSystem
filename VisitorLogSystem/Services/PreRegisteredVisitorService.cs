@@ -59,7 +59,7 @@ namespace VisitorLogSystem.Services
             var preRegistration = new PreRegisteredVisitor
             {
                 FullName = dto.FullName,
-                Purpose = dto.Purpose?? string.Empty,
+                Purpose = dto.Purpose ?? string.Empty,
                 ExpectedVisitDate = dto.ExpectedVisitDate,
                 HostUserId = dto.HostUserId,
                 IsCheckedIn = false,
@@ -114,7 +114,11 @@ namespace VisitorLogSystem.Services
             return results.Select(MapToDto);
         }
 
-        public async Task<RoomVisitDto> CheckInPreRegisteredVisitorAsync(int preRegistrationId, int checkedInByUserId)
+        //FIX: Updated signature to accept roomName parameter
+        public async Task<RoomVisitDto> CheckInPreRegisteredVisitorAsync(
+            int preRegistrationId,
+            int checkedInByUserId,
+            string roomName = "Main Office") 
         {
             var preReg = _preRegRepository.GetById(preRegistrationId);
             if (preReg == null)
@@ -134,19 +138,35 @@ namespace VisitorLogSystem.Services
 
             if (visitor == null)
             {
+               
                 visitor = new Visitor
                 {
                     FullName = preReg.FullName,
+                    TimeIn = DateTime.Now, 
                     CreatedAt = DateTime.Now
                 };
                 visitor = await _visitorRepository.AddAsync(visitor);
             }
+            else
+            {
+                //FIX: If visitor exists but TimeIn is default, update it
+                if (visitor.TimeIn == default(DateTime))
+                {
+                    visitor.TimeIn = DateTime.Now;
+                    await _visitorRepository.UpdateAsync(visitor);
+                }
+            }
 
-            // Create RoomVisit - Note: Your RoomVisit model requires RoomName
+            //FIX: Use provided room name or fall back to pre-reg room name
+            string finalRoomName = !string.IsNullOrWhiteSpace(roomName)
+                ? roomName
+                : (preReg.RoomName ?? "Main Office");
+
+            // Create RoomVisit
             var roomVisit = new RoomVisit
             {
                 VisitorId = visitor.Id,
-                RoomName = "Main Office", // Default room - you may want to add this to PreRegisteredVisitor
+                RoomName = finalRoomName, 
                 Purpose = preReg.Purpose,
                 EnteredAt = DateTime.Now,
                 CreatedAt = DateTime.Now
@@ -167,7 +187,7 @@ namespace VisitorLogSystem.Services
             {
                 throw new Exception("Failed to retrieve room visit after creation");
             }
-            // Your RoomVisit model doesn't have CreatedByUser, so we'll use available data
+
             return new RoomVisitDto
             {
                 Id = roomVisitWithRelations.Id,
@@ -175,9 +195,9 @@ namespace VisitorLogSystem.Services
                 FullName = roomVisitWithRelations.Visitor?.FullName ?? "",
                 Purpose = roomVisitWithRelations.Purpose ?? "",
                 TimeIn = roomVisitWithRelations.EnteredAt,
-                TimeOut = null, // Your model doesn't track checkout
-                UserId = checkedInByUserId, // Pass through the user who checked them in
-                Username = "" // Your RoomVisit doesn't have User navigation property
+                TimeOut = null,
+                UserId = checkedInByUserId,
+                Username = ""
             };
         }
 
@@ -196,8 +216,9 @@ namespace VisitorLogSystem.Services
                 CheckedInByUserId = model.CheckedInByUserId,
                 CheckedInByUserName = model.CheckedInByUser?.Username,
                 CheckedInAt = model.CheckedInAt,
-                RoomVisitId = model.RoomVisitId
+                RoomVisitId = model.RoomVisitId,
+                RoomName = model.RoomName 
             };
         }
-    }
+        }
 }

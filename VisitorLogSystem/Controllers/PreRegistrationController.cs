@@ -26,7 +26,7 @@ namespace VisitorLogSystem.Controllers
             _authService = authService;
         }
 
-        // GET: PreRegistration
+        
         public IActionResult Index(string searchTerm, DateTime? filterDate, bool showOnlyPending = true)
         {
             var currentUser = _authService.GetCurrentUserId();
@@ -35,10 +35,11 @@ namespace VisitorLogSystem.Controllers
                 return RedirectToAction("Login", "Auth");
             }
 
-            var preRegistrations = showOnlyPending 
+            var preRegistrations = showOnlyPending
                 ? _preRegService.GetPendingVisitors().ToList()
                 : _preRegService.GetAllPreRegisteredVisitors().ToList();
 
+            // FIX Extract .Value from nullable DateTime
             if (filterDate.HasValue)
             {
                 preRegistrations = _preRegService.GetPendingVisitorsByDate(filterDate.Value).ToList();
@@ -61,7 +62,7 @@ namespace VisitorLogSystem.Controllers
                     IsCheckedIn = dto.IsCheckedIn,
                     CreatedAt = dto.CreatedAt,
                     CheckedInByUserName = dto.CheckedInByUserName,
-                    CheckedInAt = dto.CheckedInAt,
+                    CheckedInAt = dto.CheckedInAt ?? default(DateTime), 
                     RoomVisitId = dto.RoomVisitId
                 }).ToList(),
                 SearchTerm = searchTerm,
@@ -225,7 +226,8 @@ namespace VisitorLogSystem.Controllers
 
             try
             {
-                var roomVisit = await _preRegService.CheckInPreRegisteredVisitorAsync(id, currentUser);
+                //FIX: Pass default room name (or get from form if available)
+                var roomVisit = await _preRegService.CheckInPreRegisteredVisitorAsync(id, currentUser, "Main Office");
                 TempData["SuccessMessage"] = $"Visitor checked in successfully! Visit ID: {roomVisit.Id}";
                 return RedirectToAction("Index");
             }
@@ -256,7 +258,7 @@ namespace VisitorLogSystem.Controllers
                 IsCheckedIn = dto.IsCheckedIn,
                 CreatedAt = dto.CreatedAt,
                 CheckedInByUserName = dto.CheckedInByUserName,
-                CheckedInAt = dto.CheckedInAt,
+                CheckedInAt = dto.CheckedInAt ?? default(DateTime), 
                 RoomVisitId = dto.RoomVisitId
             };
 

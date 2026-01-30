@@ -4,81 +4,86 @@
     ViewData["Title"] = "Pre-Registration Details";
 }
 
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-8 offset-md-2">
-            <div class="card">
-                <div class="card-header">
-                    <h3>@ViewData["Title"]</h3>
-                </div>
-                <div class="card-body">
-                    <dl class="row">
-                        <dt class="col-sm-4">Full Name:</dt>
-                        <dd class="col-sm-8">@Model.FullName</dd>
+<h2>Pre-Registration Details</h2>
 
-                        <dt class="col-sm-4">Purpose:</dt>
-                        <dd class="col-sm-8">@Model.Purpose</dd>
+<div class="card">
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Full Name</dt>
+            <dd class="col-sm-9">@Model.FullName</dd>
 
-                        <dt class="col-sm-4">Expected Visit Date:</dt>
-                        <dd class="col-sm-8">@Model.ExpectedVisitDate.ToString("MMMM dd, yyyy hh:mm tt")</dd>
+            <dt class="col-sm-3">Purpose</dt>
+            <dd class="col-sm-9">@Model.Purpose</dd>
 
-                        <dt class="col-sm-4">Host:</dt>
-                        <dd class="col-sm-8">@Model.HostUserName</dd>
+            <dt class="col-sm-3">Expected Visit Date</dt>
+            <dd class="col-sm-9">@Model.ExpectedVisitDate.ToString("MMM dd, yyyy hh:mm tt")</dd>
 
-                        <dt class="col-sm-4">Status:</dt>
-                        <dd class="col-sm-8">
-                            @if (Model.IsCheckedIn)
-                            {
-                                <span class="badge bg-success">Checked In</span>
-                            }
-                            else if (Model.ExpectedVisitDate < DateTime.Now)
-                            {
-                                <span class="badge bg-warning">Overdue</span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-info">Pending</span>
-                            }
-                        </dd>
+            <dt class="col-sm-3">Host</dt>
+            <dd class="col-sm-9">@(Model.HostUserName ?? "N/A")</dd>
 
-                        <dt class="col-sm-4">Created At:</dt>
-                        <dd class="col-sm-8">@Model.CreatedAt.ToString("MMMM dd, yyyy hh:mm tt")</dd>
+            <dt class="col-sm-3">Status</dt>
+            <dd class="col-sm-9">
+                @if (Model.IsCheckedIn)
+                {
+                    <span class="badge bg-success">Checked In</span>
+                }
+                else
+                {
+                    <span class="badge bg-warning">Pending</span>
+                }
+            </dd>
 
-                        @if (Model.IsCheckedIn)
-                        {
-                            <dt class="col-sm-4">Checked In By:</dt>
-                            <dd class="col-sm-8">@Model.CheckedInByUserName</dd>
+            <dt class="col-sm-3">Created At</dt>
+            <dd class="col-sm-9">@Model.CreatedAt.ToString("MMM dd, yyyy hh:mm tt")</dd>
 
-                            <dt class="col-sm-4">Checked In At:</dt>
-                            <dd class="col-sm-8">@Model.CheckedInAt.ToString("MMMM dd, yyyy hh:mm tt")</dd>
+            @if (Model.IsCheckedIn)
+            {
+                <dt class="col-sm-3">Checked In By</dt>
+                <dd class="col-sm-9">@(Model.CheckedInByUserName ?? "N/A")</dd>
 
-                            <dt class="col-sm-4">Room Visit:</dt>
-                            <dd class="col-sm-8">
-                                <a asp-controller="RoomVisit" asp-action="Details" asp-route-id="@Model.RoomVisitId" class="btn btn-sm btn-info">
-                                    View Visit #@Model.RoomVisitId
-                                </a>
-                            </dd>
-                        }
-                    </dl>
+                <dt class="col-sm-3">Checked In At</dt>
+                <dd class="col-sm-9">
+                    @* ✅ FIX Line 53 - Handle nullable DateTime *@
+                    @if (Model.CheckedInAt.HasValue)
+                    {
+                        @Model.CheckedInAt.Value.ToString("MMM dd, yyyy hh:mm tt")
+                    }
+                    else
+                    {
+                        <text>N/A</text>
+                    }
+                </dd>
 
-                    <div class="mt-3">
-                        @if (!Model.IsCheckedIn)
-                        {
-                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">
-                                <i class="fas fa-edit"></i> Edit
-                            </a>
-                            <form asp-action="CheckIn" asp-route-id="@Model.Id" method="post" class="d-inline">
-                                <button type="submit" class="btn btn-success" onclick="return confirm('Check in this visitor?');">
-                                    <i class="fas fa-sign-in-alt"></i> Check In
-                                </button>
-                            </form>
-                        }
-                        <a asp-action="Index" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left"></i> Back to List
+                @if (Model.RoomVisitId.HasValue)
+                {
+                    <dt class="col-sm-3">Room Visit ID</dt>
+                    <dd class="col-sm-9">
+                        <a asp-controller="RoomVisit" asp-action="Details" asp-route-id="@Model.RoomVisitId">
+                            View Visit #@Model.RoomVisitId
                         </a>
-                    </div>
-                </div>
-            </div>
-        </div>
+                    </dd>
+                }
+            }
+        </dl>
     </div>
+</div>
+
+<div class="mt-3">
+    @if (!Model.IsCheckedIn)
+    {
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Edit</a>
+        <form asp-action="CheckIn" asp-route-id="@Model.Id" method="post" class="d-inline">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-success" onclick="return confirm('Check in this visitor?');">
+                Check In
+            </button>
+        </form>
+        <form asp-action="Delete" asp-route-id="@Model.Id" method="post" class="d-inline">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this pre-registration?');">
+                Delete
+            </button>
+        </form>
+    }
+    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
 </div>

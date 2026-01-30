@@ -35,7 +35,7 @@ namespace VisitorLogSystem.Services
         {
             var visitor = MapToEntity(visitorDto);
 
-            if (visitor.TimeIn == default(DateTime))
+            if (visitor.TimeIn == default(DateTime) || visitor.TimeIn == DateTime.MinValue)
                 visitor.TimeIn = DateTime.Now;
 
             var createdVisitor = await _repository.AddAsync(visitor);

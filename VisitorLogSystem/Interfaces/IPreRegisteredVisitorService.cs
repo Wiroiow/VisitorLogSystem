@@ -16,6 +16,11 @@ namespace VisitorLogSystem.Interfaces
         PreRegisteredVisitorDto UpdatePreRegistration(PreRegisteredVisitorDto dto);
         void DeletePreRegistration(int id);
         IEnumerable<PreRegisteredVisitorDto> SearchPending(string searchTerm);
-        Task<RoomVisitDto> CheckInPreRegisteredVisitorAsync(int preRegistrationId, int checkedInByUserId);
+
+        //FIX: Updated signature to include roomName parameter
+        Task<RoomVisitDto> CheckInPreRegisteredVisitorAsync(
+            int preRegistrationId,
+            int checkedInByUserId,
+            string roomName = "Main Office");
     }
 }

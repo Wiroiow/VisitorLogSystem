@@ -29,7 +29,6 @@ namespace VisitorLogSystem.Controllers
             return View(roomVisits);
         }
 
-
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -49,7 +48,6 @@ namespace VisitorLogSystem.Controllers
             return View(roomVisit);
         }
 
-
         public async Task<IActionResult> Create()
         {
             // Load only visitors currently in the building 
@@ -67,7 +65,6 @@ namespace VisitorLogSystem.Controllers
 
             return View();
         }
-
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -120,7 +117,6 @@ namespace VisitorLogSystem.Controllers
             return View(roomVisit);
         }
 
-
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -129,7 +125,7 @@ namespace VisitorLogSystem.Controllers
             }
 
             var roomVisit = await _context.RoomVisits
-                .Include(rv => rv.Visitor) //  Include visitor to check TimeOut
+                .Include(rv => rv.Visitor)
                 .FirstOrDefaultAsync(rv => rv.Id == id);
 
             if (roomVisit == null)
@@ -137,7 +133,7 @@ namespace VisitorLogSystem.Controllers
                 return NotFound();
             }
 
-            //  Check if visitor has signed out
+            // Check if visitor has signed out
             if (roomVisit.Visitor?.TimeOut.HasValue == true)
             {
                 TempData["ErrorMessage"] = "Cannot edit room visit - visitor has already signed out.";
@@ -159,7 +155,6 @@ namespace VisitorLogSystem.Controllers
             return View(roomVisit);
         }
 
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,VisitorId,RoomName,EnteredAt,Purpose,CreatedAt")] RoomVisit roomVisit)
@@ -173,7 +168,7 @@ namespace VisitorLogSystem.Controllers
             {
                 try
                 {
-                    // ✅ Verify visitor exists and hasn't signed out
+                    // Verify visitor exists and hasn't signed out
                     var visitor = await _context.Visitors.FindAsync(roomVisit.VisitorId);
 
                     if (visitor == null)
@@ -221,7 +216,6 @@ namespace VisitorLogSystem.Controllers
             return View(roomVisit);
         }
 
-
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -241,7 +235,6 @@ namespace VisitorLogSystem.Controllers
             return View(roomVisit);
         }
 
-
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -259,7 +252,7 @@ namespace VisitorLogSystem.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-
+       
         public async Task<IActionResult> ByVisitor(int? id)
         {
             if (id == null)
@@ -277,7 +270,12 @@ namespace VisitorLogSystem.Controllers
             }
 
             ViewData["VisitorName"] = visitor.FullName;
-            return View(visitor.RoomVisits.OrderByDescending(rv => rv.EnteredAt).ToList());
+
+            //FIX: Handle null collection and ensure proper typing
+            var roomVisits = visitor.RoomVisits?.OrderByDescending(rv => rv.EnteredAt).ToList()
+                             ?? new List<RoomVisit>();
+
+            return View(roomVisits);
         }
 
         private bool RoomVisitExists(int id)

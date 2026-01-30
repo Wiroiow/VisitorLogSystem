@@ -15,7 +15,7 @@ namespace VisitorLogSystem.ViewModels
 
         [Required(ErrorMessage = "Purpose is required")]
         [Display(Name = "Purpose of Visit")]
-        public string? Purpose { get; set; } 
+        public string? Purpose { get; set; }
 
         [Required(ErrorMessage = "Expected Visit Date is required")]
         [Display(Name = "Expected Visit Date")]
@@ -26,21 +26,25 @@ namespace VisitorLogSystem.ViewModels
         [Display(Name = "Host")]
         public int HostUserId { get; set; }
 
-        public string? HostUserName { get; set; } 
+        public string? HostUserName { get; set; }
+
         public bool IsCheckedIn { get; set; }
+
         public DateTime CreatedAt { get; set; }
+
         public string? CheckedInByUserName { get; set; }
-        public DateTime CheckedInAt { get; set; } 
+
+     
+        public DateTime? CheckedInAt { get; set; }
+
         public int? RoomVisitId { get; set; }
 
-        
-        public List<UserDto>? AvailableHosts{ get; set; } 
+        public List<UserDto>? AvailableHosts { get; set; }
     }
 
     public class PreRegistrationListViewModel
     {
         public List<PreRegistrationViewModel> PreRegistrations { get; set; } = new List<PreRegistrationViewModel>();
-
         public string? SearchTerm { get; set; }
         public DateTime? FilterDate { get; set; }
         public bool ShowOnlyPending { get; set; }
