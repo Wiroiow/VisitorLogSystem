@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using VisitorLogSystem.Data;
 using VisitorLogSystem.Interfaces;
+using VisitorLogSystem.Models;
 using VisitorLogSystem.Repositories;
 using VisitorLogSystem.Services;
 
@@ -44,6 +45,12 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     });
 
 // ═══════════════════════════════════════════════════════════
+// STEP 3.5: ✅ NEW - Configure Email Settings
+// ═══════════════════════════════════════════════════════════
+builder.Services.Configure<EmailSettings>(
+    builder.Configuration.GetSection("EmailSettings"));
+
+// ═══════════════════════════════════════════════════════════
 // STEP 4: Register Dependency Injection Services
 // ═══════════════════════════════════════════════════════════
 
@@ -66,9 +73,12 @@ builder.Services.AddScoped<IRoomVisitService, RoomVisitService>();
 builder.Services.AddScoped<IDashboardRepository, DashboardRepository>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 
-// ✅ Pre-Registration Services (NEW!)
+// ✅ Pre-Registration Services
 builder.Services.AddScoped<IPreRegisteredVisitorRepository, PreRegisteredVisitorRepository>();
 builder.Services.AddScoped<IPreRegisteredVisitorService, PreRegisteredVisitorService>();
+
+// ✅ NEW - Email Service
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 // ═══════════════════════════════════════════════════════════
 // STEP 5: Configure Logging
@@ -102,6 +112,7 @@ using (var scope = app.Services.CreateScope())
                 Username = "admin",
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123"),
                 Role = "Admin",
+                Email = "admin@system.local", // ✅ NEW
                 CreatedAt = DateTime.Now
             };
 
@@ -139,9 +150,8 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 
-// ⚠️ CRITICAL: Order matters!
-app.UseAuthentication(); // First
-app.UseAuthorization();  // Second
+app.UseAuthentication();
+app.UseAuthorization();
 
 // ═══════════════════════════════════════════════════════════
 // STEP 8: Map Controller Routes
@@ -157,5 +167,6 @@ Console.WriteLine("🚀 Application started successfully!");
 Console.WriteLine("📊 Default route: Dashboard/Index");
 Console.WriteLine("🔐 Admin login: admin / admin123");
 Console.WriteLine("📋 Pre-Registration: /PreRegistration/Index");
+Console.WriteLine("📧 Email Test: /EmailTest (Admin only)");
 
 app.Run();

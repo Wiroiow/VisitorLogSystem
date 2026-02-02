@@ -15,18 +15,20 @@ namespace VisitorLogSystem.Controllers
         private readonly IPreRegisteredVisitorService _preRegService;
         private readonly IUserManagementService _userService;
         private readonly IAuthService _authService;
+        private readonly IEmailService _emailService; // ✅ NEW
 
         public PreRegistrationController(
             IPreRegisteredVisitorService preRegService,
             IUserManagementService userService,
-            IAuthService authService)
+            IAuthService authService,
+            IEmailService emailService) // ✅ NEW
         {
             _preRegService = preRegService;
             _userService = userService;
             _authService = authService;
+            _emailService = emailService; // ✅ NEW
         }
 
-        
         public IActionResult Index(string searchTerm, DateTime? filterDate, bool showOnlyPending = true)
         {
             var currentUser = _authService.GetCurrentUserId();
@@ -39,7 +41,6 @@ namespace VisitorLogSystem.Controllers
                 ? _preRegService.GetPendingVisitors().ToList()
                 : _preRegService.GetAllPreRegisteredVisitors().ToList();
 
-            // FIX Extract .Value from nullable DateTime
             if (filterDate.HasValue)
             {
                 preRegistrations = _preRegService.GetPendingVisitorsByDate(filterDate.Value).ToList();
@@ -62,7 +63,7 @@ namespace VisitorLogSystem.Controllers
                     IsCheckedIn = dto.IsCheckedIn,
                     CreatedAt = dto.CreatedAt,
                     CheckedInByUserName = dto.CheckedInByUserName,
-                    CheckedInAt = dto.CheckedInAt ?? default(DateTime), 
+                    CheckedInAt = dto.CheckedInAt ?? default(DateTime),
                     RoomVisitId = dto.RoomVisitId
                 }).ToList(),
                 SearchTerm = searchTerm,
@@ -73,7 +74,6 @@ namespace VisitorLogSystem.Controllers
             return View(viewModel);
         }
 
-        // GET: PreRegistration/Create
         public async Task<IActionResult> Create()
         {
             var currentUser = _authService.GetCurrentUserId();
@@ -83,7 +83,6 @@ namespace VisitorLogSystem.Controllers
             }
 
             var hosts = await _userService.GetAllUsersAsync();
-
             var viewModel = new PreRegistrationViewModel
             {
                 ExpectedVisitDate = DateTime.Now.AddDays(1),
@@ -94,7 +93,6 @@ namespace VisitorLogSystem.Controllers
             return View(viewModel);
         }
 
-        // POST: PreRegistration/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(PreRegistrationViewModel viewModel)
@@ -116,8 +114,36 @@ namespace VisitorLogSystem.Controllers
                     HostUserId = viewModel.HostUserId
                 };
 
-                _preRegService.CreatePreRegistration(dto);
-                TempData["SuccessMessage"] = "Visitor pre-registered successfully!";
+                var created = _preRegService.CreatePreRegistration(dto);
+
+                // ✅ NEW: Send email notification if visitor email provided
+                if (!string.IsNullOrWhiteSpace(viewModel.VisitorEmail))
+                {
+                    try
+                    {
+                        var host = await _userService.GetUserByIdAsync(viewModel.HostUserId);
+
+                        await _emailService.SendPreRegistrationConfirmationAsync(
+                            viewModel.VisitorEmail,
+                            viewModel.FullName,
+                            viewModel.ExpectedVisitDate,
+                            viewModel.Purpose ?? "Visit",
+                            host?.Username ?? "Your Host"
+                        );
+
+                        TempData["SuccessMessage"] = $"Visitor pre-registered successfully! Confirmation email sent to {viewModel.VisitorEmail}";
+                    }
+                    catch (Exception emailEx)
+                    {
+                        Console.WriteLine($"Email failed: {emailEx.Message}");
+                        TempData["SuccessMessage"] = "Visitor pre-registered successfully! (Email notification failed)";
+                    }
+                }
+                else
+                {
+                    TempData["SuccessMessage"] = "Visitor pre-registered successfully!";
+                }
+
                 return RedirectToAction("Index");
             }
             catch (Exception ex)
@@ -129,7 +155,6 @@ namespace VisitorLogSystem.Controllers
             }
         }
 
-        // GET: PreRegistration/Edit/5
         public async Task<IActionResult> Edit(int id)
         {
             var dto = _preRegService.GetById(id);
@@ -145,7 +170,6 @@ namespace VisitorLogSystem.Controllers
             }
 
             var hosts = await _userService.GetAllUsersAsync();
-
             var viewModel = new PreRegistrationViewModel
             {
                 Id = dto.Id,
@@ -159,7 +183,6 @@ namespace VisitorLogSystem.Controllers
             return View(viewModel);
         }
 
-        // POST: PreRegistration/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(PreRegistrationViewModel viewModel)
@@ -195,7 +218,6 @@ namespace VisitorLogSystem.Controllers
             }
         }
 
-        // POST: PreRegistration/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Delete(int id)
@@ -213,7 +235,6 @@ namespace VisitorLogSystem.Controllers
             return RedirectToAction("Index");
         }
 
-        // POST: PreRegistration/CheckIn/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CheckIn(int id)
@@ -226,7 +247,6 @@ namespace VisitorLogSystem.Controllers
 
             try
             {
-                //FIX: Pass default room name (or get from form if available)
                 var roomVisit = await _preRegService.CheckInPreRegisteredVisitorAsync(id, currentUser, "Main Office");
                 TempData["SuccessMessage"] = $"Visitor checked in successfully! Visit ID: {roomVisit.Id}";
                 return RedirectToAction("Index");
@@ -238,7 +258,6 @@ namespace VisitorLogSystem.Controllers
             }
         }
 
-        // GET: PreRegistration/Details/5
         public IActionResult Details(int id)
         {
             var dto = _preRegService.GetById(id);
@@ -258,7 +277,7 @@ namespace VisitorLogSystem.Controllers
                 IsCheckedIn = dto.IsCheckedIn,
                 CreatedAt = dto.CreatedAt,
                 CheckedInByUserName = dto.CheckedInByUserName,
-                CheckedInAt = dto.CheckedInAt ?? default(DateTime), 
+                CheckedInAt = dto.CheckedInAt ?? default(DateTime),
                 RoomVisitId = dto.RoomVisitId
             };
 

@@ -17,6 +17,10 @@ namespace VisitorLogSystem.ViewModels
         [Display(Name = "Purpose of Visit")]
         public string? Purpose { get; set; }
 
+        [EmailAddress(ErrorMessage = "Please enter a valid email address")]
+        [StringLength(100)]
+        public string? VisitorEmail { get; set; }
+
         [Required(ErrorMessage = "Expected Visit Date is required")]
         [Display(Name = "Expected Visit Date")]
         [DataType(DataType.DateTime)]

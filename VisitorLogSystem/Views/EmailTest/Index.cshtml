@@ -1,0 +1,85 @@
+﻿@{
+    ViewData["Title"] = "Email Configuration Test";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="bi bi-envelope-check-fill me-2"></i>
+                        Email Configuration Test
+                    </h3>
+                </div>
+                <div class="card-body">
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            @TempData["SuccessMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            @TempData["ErrorMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    <p class="lead">
+                        Send a test email to verify your email configuration is working correctly.
+                    </p>
+
+                    <form asp-action="SendTest" method="post" class="mt-4">
+                        @Html.AntiForgeryToken()
+
+                        <div class="mb-3">
+                            <label for="testEmail" class="form-label">Test Email Address</label>
+                            <input type="email"
+                                   class="form-control form-control-lg"
+                                   id="testEmail"
+                                   name="testEmail"
+                                   placeholder="Enter your email address"
+                                   required />
+                            <div class="form-text">
+                                We'll send a test message to this address
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-send-fill me-2"></i>
+                                Send Test Email
+                            </button>
+                            <a asp-controller="Dashboard" asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left me-2"></i>
+                                Back to Dashboard
+                            </a>
+                        </div>
+                    </form>
+
+                    <hr class="my-4">
+
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="bi bi-info-circle-fill me-2"></i>
+                                Gmail Setup Tips
+                            </h5>
+                            <ol class="mb-0">
+                                <li>Enable 2-Factor Authentication on your Gmail account</li>
+                                <li>Generate an App Password (not your regular password)</li>
+                                <li>Run: <code>dotnet user-secrets set "EmailSettings:Smtp:Username" "your-email@gmail.com"</code></li>
+                                <li>Run: <code>dotnet user-secrets set "EmailSettings:Smtp:Password" "your-app-password"</code></li>
+                                <li>Check spam folder if you don't see the email</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
