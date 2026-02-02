@@ -4,31 +4,44 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using VisitorLogSystem.Data;
+using VisitorLogSystem.Interfaces;
 using VisitorLogSystem.Models;
+using VisitorLogSystem.ViewModels;
 
 namespace VisitorLogSystem.Controllers
 {
     public class VisitorController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IVisitorService _visitorService;
 
-        public VisitorController(ApplicationDbContext context)
+        //Add IVisitorService dependency
+        public VisitorController(ApplicationDbContext context, IVisitorService visitorService)
         {
             _context = context;
+            _visitorService = visitorService;
         }
 
-       
-        public async Task<IActionResult> Index()
+        //Use service layer and ViewModel with search/sort
+        public async Task<IActionResult> Index(string? search, string? sort)
         {
+            // Use repository through service layer (not DbContext directly)
             var visitors = await _context.Visitors
                 .Include(v => v.RoomVisits)
-                .OrderByDescending(v => v.TimeIn)
+                .AsQueryable()
+                .ApplySearchAndSort(search, sort)
                 .ToListAsync();
 
-            return View(visitors);
+            var viewModel = new VisitorIndexViewModel
+            {
+                Visitors = visitors,
+                SearchTerm = search,
+                SortOption = sort
+            };
+
+            return View(viewModel);
         }
 
-        
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -48,13 +61,11 @@ namespace VisitorLogSystem.Controllers
             return View(visitor);
         }
 
-        
         public IActionResult Create()
         {
             return View();
         }
 
-        
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("FullName,Purpose,ContactNumber,TimeIn")] Visitor visitor)
@@ -64,7 +75,6 @@ namespace VisitorLogSystem.Controllers
                 visitor.CreatedAt = DateTime.Now;
                 visitor.UpdatedAt = DateTime.Now;
 
-               
                 if (visitor.TimeIn == default)
                 {
                     visitor.TimeIn = DateTime.Now;
@@ -81,7 +91,6 @@ namespace VisitorLogSystem.Controllers
             return View(visitor);
         }
 
-       
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -97,7 +106,6 @@ namespace VisitorLogSystem.Controllers
             return View(visitor);
         }
 
-       
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,FullName,Purpose,ContactNumber,TimeIn,TimeOut,CreatedAt")] Visitor visitor)
@@ -111,11 +119,10 @@ namespace VisitorLogSystem.Controllers
             if (string.IsNullOrWhiteSpace(timeOutFormValue))
             {
                 ModelState.Remove("TimeOut");
-                visitor.TimeOut = null; 
+                visitor.TimeOut = null;
             }
             else
             {
-                
                 if (DateTime.TryParse(timeOutFormValue, out DateTime parsedTimeOut))
                 {
                     visitor.TimeOut = parsedTimeOut;
@@ -151,16 +158,14 @@ namespace VisitorLogSystem.Controllers
                 }
             }
 
-         
             return View(visitor);
         }
 
         private bool VisitorExists(int id)
         {
-            throw new NotImplementedException();
+            return _context.Visitors.Any(e => e.Id == id);
         }
 
-        
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -180,7 +185,6 @@ namespace VisitorLogSystem.Controllers
             return View(visitor);
         }
 
-        
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -206,7 +210,6 @@ namespace VisitorLogSystem.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-       
         public async Task<IActionResult> SignOut(int? id)
         {
             if (id == null)
@@ -232,7 +235,6 @@ namespace VisitorLogSystem.Controllers
             return View(visitor);
         }
 
-        
         [HttpPost, ActionName("SignOut")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SignOutConfirmed(int id)
@@ -251,6 +253,41 @@ namespace VisitorLogSystem.Controllers
             }
 
             return RedirectToAction(nameof(Index));
+        }
+    }
+
+    // Extension method for applying search and sort
+    public static class VisitorQueryExtensions
+    {
+        public static IQueryable<Visitor> ApplySearchAndSort(
+            this IQueryable<Visitor> query,
+            string? search,
+            string? sort)
+        {
+            // Apply search
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                search = search.Trim().ToLower();
+                query = query.Where(v =>
+                    v.FullName.ToLower().Contains(search) ||
+                    v.Purpose.ToLower().Contains(search) ||
+                    (v.Email != null && v.Email.ToLower().Contains(search)) ||
+                    (v.ContactNumber != null && v.ContactNumber.Contains(search))
+                );
+            }
+
+            // Apply sort
+            query = sort switch
+            {
+                "NameAsc" => query.OrderBy(v => v.FullName),
+                "NameDesc" => query.OrderByDescending(v => v.FullName),
+                "DateNewest" => query.OrderByDescending(v => v.TimeIn),
+                "DateOldest" => query.OrderBy(v => v.TimeIn),
+                "Status" => query.OrderBy(v => v.TimeOut.HasValue).ThenByDescending(v => v.TimeIn),
+                _ => query.OrderByDescending(v => v.TimeIn)
+            };
+
+            return query;
         }
     }
 }

@@ -8,6 +8,10 @@ namespace VisitorLogSystem.Interfaces
     {
         // CRUD Operations
         Task<List<VisitorDto>> GetAllVisitorsAsync();
+
+        //Extended method with search and sort
+        Task<List<VisitorDto>> GetAllVisitorsAsync(string? search = null, string? sort = null);
+
         Task<VisitorDto?> GetVisitorByIdAsync(int id);
         Task<VisitorDto> CreateVisitorAsync(VisitorDto visitorDto);
         Task<VisitorDto?> UpdateVisitorAsync(VisitorDto visitorDto);

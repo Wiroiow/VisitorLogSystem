@@ -1,4 +1,6 @@
-﻿@model IEnumerable<VisitorLogSystem.Models.RoomVisit>
+﻿@* ✅ CHANGE #1: Update the @model directive *@
+@model VisitorLogSystem.ViewModels.RoomVisitIndexViewModel
+
 @{
     ViewData["Title"] = "Room Visits";
 }
@@ -27,6 +29,36 @@
     </div>
 }
 
+@* ✅ CHANGE #2: ADD THIS ENTIRE SEARCH AND SORT CARD - Place it here, before the table *@
+<div class="card mb-3">
+    <div class="card-body">
+        <form method="get" asp-action="Index" class="row g-3">
+            <div class="col-md-6">
+                <label for="search" class="form-label">🔍 Search</label>
+                <input type="text"
+                       class="form-control"
+                       id="search"
+                       name="search"
+                       value="@Model.SearchTerm"
+                       placeholder="Search by visitor name, room, purpose, or contact..." />
+            </div>
+            <div class="col-md-4">
+                <label for="sort" class="form-label">📊 Sort By</label>
+                <select class="form-select" id="sort" name="sort" asp-items="Model.SortOptions"></select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">Apply</button>
+            </div>
+        </form>
+        @if (!string.IsNullOrWhiteSpace(Model.SearchTerm) || !string.IsNullOrWhiteSpace(Model.SortOption))
+        {
+            <div class="mt-2">
+                <a asp-action="Index" class="btn btn-sm btn-secondary">Clear Filters</a>
+            </div>
+        }
+    </div>
+</div>
+
 <div class="table-responsive">
     <table class="table table-striped table-hover">
         <thead class="table-dark">
@@ -41,9 +73,10 @@
             </tr>
         </thead>
         <tbody>
-            @if (Model != null && Model.Any())
+            @* ✅ CHANGE #3: Update Model references to Model.RoomVisits *@
+            @if (Model.RoomVisits != null && Model.RoomVisits.Any())
             {
-                @foreach (var item in Model)
+                @foreach (var item in Model.RoomVisits)
                 {
                     var visitorSignedOut = item.Visitor?.TimeOut.HasValue ?? false;
 

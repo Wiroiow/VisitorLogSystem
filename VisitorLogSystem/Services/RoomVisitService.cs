@@ -108,19 +108,26 @@ namespace VisitorLogSystem.Services
             return roomVisits.Select(rv => MapToDto(rv, rv.Visitor)).ToList();
         }
 
-        // HELPER METHOD - ✅ CORRECTED to match your RoomVisitDto
+        //Get all room visits with search and sort
+        public async Task<List<RoomVisitDto>> GetAllRoomVisitsAsync(string? search = null, string? sort = null)
+        {
+            var roomVisits = await _roomVisitRepository.GetAllAsync(search, sort);
+            return roomVisits.Select(rv => MapToDto(rv, rv.Visitor)).ToList();
+        }
+
+        // HELPER METHOD match your RoomVisitDto
         private RoomVisitDto MapToDto(RoomVisit roomVisit, Visitor? visitor)
         {
             return new RoomVisitDto
             {
                 Id = roomVisit.Id,
                 VisitorId = roomVisit.VisitorId,
-                FullName = visitor?.FullName ?? "Unknown",  
+                FullName = visitor?.FullName ?? "Unknown",
                 Purpose = roomVisit.Purpose ?? "",
-                TimeIn = roomVisit.EnteredAt,               
-                TimeOut = null,                            
-                UserId = 0,                                
-                Username = ""                              
+                TimeIn = roomVisit.EnteredAt,
+                TimeOut = null,
+                UserId = 0,
+                Username = ""
             };
         }
     }

@@ -15,9 +15,17 @@ namespace VisitorLogSystem.Services
 
         #region CRUD Operations
 
+        
         public async Task<List<VisitorDto>> GetAllVisitorsAsync()
         {
             var visitors = await _repository.GetAllAsync();
+            return visitors.Select(MapToDto).ToList();
+        }
+
+        //Extended method with search and sort
+        public async Task<List<VisitorDto>> GetAllVisitorsAsync(string? search = null, string? sort = null)
+        {
+            var visitors = await _repository.GetAllAsync(search, sort);
             return visitors.Select(MapToDto).ToList();
         }
 
@@ -52,7 +60,7 @@ namespace VisitorLogSystem.Services
             existingVisitor.FullName = visitorDto.FullName;
             existingVisitor.Purpose = visitorDto.Purpose;
             existingVisitor.ContactNumber = visitorDto.ContactNumber;
-            existingVisitor.Email = visitorDto.Email; 
+            existingVisitor.Email = visitorDto.Email;
             existingVisitor.TimeIn = visitorDto.TimeIn;
             existingVisitor.TimeOut = visitorDto.TimeOut;
 
@@ -136,9 +144,9 @@ namespace VisitorLogSystem.Services
             return visitor != null ? MapToDto(visitor) : null;
         }
 
-       
-        /// Check if email already exists in the system
         
+        /// Check if email already exists in the system
+     
         public async Task<bool> EmailExistsAsync(string email, int? excludeVisitorId = null)
         {
             if (string.IsNullOrWhiteSpace(email))
@@ -151,17 +159,16 @@ namespace VisitorLogSystem.Services
                 v.Id != excludeVisitorId);
         }
 
-        
         public async Task<VisitorDto> FindOrCreateVisitorAsync(VisitorDto visitorDto)
         {
-           
+            // Try to find existing visitor by email
             if (!string.IsNullOrWhiteSpace(visitorDto.Email))
             {
                 var existingVisitor = await FindVisitorByEmailAsync(visitorDto.Email);
 
                 if (existingVisitor != null)
                 {
-                    
+                    // Update existing visitor info
                     existingVisitor.FullName = visitorDto.FullName;
                     existingVisitor.ContactNumber = visitorDto.ContactNumber;
                     existingVisitor.Purpose = visitorDto.Purpose;
@@ -171,7 +178,7 @@ namespace VisitorLogSystem.Services
                 }
             }
 
-            
+            // Create new visitor if not found
             return await CreateVisitorAsync(visitorDto);
         }
 
@@ -187,7 +194,7 @@ namespace VisitorLogSystem.Services
                 FullName = visitor.FullName,
                 Purpose = visitor.Purpose,
                 ContactNumber = visitor.ContactNumber,
-                Email = visitor.Email, 
+                Email = visitor.Email,
                 TimeIn = visitor.TimeIn,
                 TimeOut = visitor.TimeOut,
                 CreatedAt = visitor.CreatedAt,
@@ -203,7 +210,7 @@ namespace VisitorLogSystem.Services
                 FullName = dto.FullName,
                 Purpose = dto.Purpose,
                 ContactNumber = dto.ContactNumber,
-                Email = dto.Email, 
+                Email = dto.Email,
                 TimeIn = dto.TimeIn,
                 TimeOut = dto.TimeOut
             };

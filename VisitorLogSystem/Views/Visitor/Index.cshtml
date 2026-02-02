@@ -1,4 +1,5 @@
-﻿@model IEnumerable<VisitorLogSystem.Models.Visitor>
+﻿@* ✅ CHANGE #1: Update the @model directive *@
+@model VisitorLogSystem.ViewModels.VisitorIndexViewModel
 
 @{
     ViewData["Title"] = "Visitors";
@@ -17,6 +18,36 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 }
+
+@* ✅ CHANGE #2: ADD THIS ENTIRE SEARCH AND SORT CARD - Place it here, before the tabs *@
+<div class="card mb-3">
+    <div class="card-body">
+        <form method="get" asp-action="Index" class="row g-3">
+            <div class="col-md-6">
+                <label for="search" class="form-label">🔍 Search</label>
+                <input type="text"
+                       class="form-control"
+                       id="search"
+                       name="search"
+                       value="@Model.SearchTerm"
+                       placeholder="Search by name, email, purpose, or contact..." />
+            </div>
+            <div class="col-md-4">
+                <label for="sort" class="form-label">📊 Sort By</label>
+                <select class="form-select" id="sort" name="sort" asp-items="Model.SortOptions"></select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">Apply</button>
+            </div>
+        </form>
+        @if (!string.IsNullOrWhiteSpace(Model.SearchTerm) || !string.IsNullOrWhiteSpace(Model.SortOption))
+        {
+            <div class="mt-2">
+                <a asp-action="Index" class="btn btn-sm btn-secondary">Clear Filters</a>
+            </div>
+        }
+    </div>
+</div>
 
 <div class="row mb-3">
     <div class="col-md-12">
@@ -44,24 +75,25 @@
                     <th>Name</th>
                     <th>Purpose</th>
                     <th>Contact</th>
+                    <th>Email</th>
                     <th>Time In</th>
                     <th>Duration</th>
                     <th>Room Visits</th>
                     <th>Actions</th>
-                    <th>Email</th>
                 </tr>
             </thead>
             <tbody>
-                @if (Model != null && Model.Any(v => v != null && v.TimeOut == null))
+                @* ✅ CHANGE #3: Update Model references to Model.Visitors *@
+                @if (Model.Visitors != null && Model.Visitors.Any(v => v != null && v.TimeOut == null))
                 {
-                    @foreach (var visitor in Model.Where(v => v != null && v.TimeOut == null))
+                    @foreach (var visitor in Model.Visitors.Where(v => v != null && v.TimeOut == null))
                     {
                         <tr>
                             <td>@(visitor.FullName ?? "Unknown")</td>
                             <td>@(visitor.Purpose ?? "-")</td>
                             <td>@(visitor.ContactNumber ?? "N/A")</td>
-                            <td>@visitor.TimeIn.ToString("MMM dd, hh:mm tt")</td>
                             <td>@(visitor.Email ?? "N/A")</td>
+                            <td>@visitor.TimeIn.ToString("MMM dd, hh:mm tt")</td>
                             <td>
                                 @{
                                     var duration = DateTime.Now - visitor.TimeIn;
@@ -84,7 +116,7 @@
                 else
                 {
                     <tr>
-                        <td colspan="7" class="text-center text-muted">
+                        <td colspan="8" class="text-center text-muted">
                             <em>No visitors currently in the building.</em>
                         </td>
                     </tr>
@@ -101,24 +133,25 @@
                     <th>Name</th>
                     <th>Purpose</th>
                     <th>Contact</th>
+                    <th>Email</th>
                     <th>Time In</th>
                     <th>Time Out</th>
                     <th>Status</th>
                     <th>Actions</th>
-                    <th>Email</th>
                 </tr>
             </thead>
             <tbody>
-                @if (Model != null && Model.Any())
+                @* ✅ CHANGE #4: Update Model references to Model.Visitors *@
+                @if (Model.Visitors != null && Model.Visitors.Any())
                 {
-                    @foreach (var visitor in Model.Where(v => v != null))
+                    @foreach (var visitor in Model.Visitors.Where(v => v != null))
                     {
                         <tr>
                             <td>@(visitor.FullName ?? "Unknown")</td>
                             <td>@(visitor.Purpose ?? "-")</td>
                             <td>@(visitor.ContactNumber ?? "N/A")</td>
-                            <td>@visitor.TimeIn.ToString("MMM dd, hh:mm tt")</td>
                             <td>@(visitor.Email ?? "N/A")</td>
+                            <td>@visitor.TimeIn.ToString("MMM dd, hh:mm tt")</td>
                             <td>
                                 @if (visitor.TimeOut.HasValue)
                                 {
@@ -150,7 +183,7 @@
                 else
                 {
                     <tr>
-                        <td colspan="7" class="text-center text-muted">
+                        <td colspan="8" class="text-center text-muted">
                             <em>No visitors recorded yet.</em>
                         </td>
                     </tr>

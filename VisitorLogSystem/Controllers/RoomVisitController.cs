@@ -5,28 +5,42 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using VisitorLogSystem.Data;
+using VisitorLogSystem.Interfaces;
 using VisitorLogSystem.Models;
+using VisitorLogSystem.ViewModels;
 
 namespace VisitorLogSystem.Controllers
 {
     public class RoomVisitsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IRoomVisitService _roomVisitService;
 
-        public RoomVisitsController(ApplicationDbContext context)
+        // ✅ UPDATED: Add IRoomVisitService dependency
+        public RoomVisitsController(ApplicationDbContext context, IRoomVisitService roomVisitService)
         {
             _context = context;
+            _roomVisitService = roomVisitService;
         }
 
-        // GET: RoomVisits
-        public async Task<IActionResult> Index()
+        // ✅ UPDATED: Use ViewModel with search/sort
+        public async Task<IActionResult> Index(string? search, string? sort)
         {
+            // Use repository query with search and sort
             var roomVisits = await _context.RoomVisits
                 .Include(rv => rv.Visitor)
-                .OrderByDescending(rv => rv.EnteredAt)
+                .AsQueryable()
+                .ApplySearchAndSort(search, sort)
                 .ToListAsync();
 
-            return View(roomVisits);
+            var viewModel = new RoomVisitIndexViewModel
+            {
+                RoomVisits = roomVisits,
+                SearchTerm = search,
+                SortOption = sort
+            };
+
+            return View(viewModel);
         }
 
         public async Task<IActionResult> Details(int? id)
@@ -252,7 +266,6 @@ namespace VisitorLogSystem.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-       
         public async Task<IActionResult> ByVisitor(int? id)
         {
             if (id == null)
@@ -281,6 +294,43 @@ namespace VisitorLogSystem.Controllers
         private bool RoomVisitExists(int id)
         {
             return _context.RoomVisits.Any(e => e.Id == id);
+        }
+    }
+
+    // ✅ HELPER: Extension method for applying search and sort
+    public static class RoomVisitQueryExtensions
+    {
+        public static IQueryable<RoomVisit> ApplySearchAndSort(
+            this IQueryable<RoomVisit> query,
+            string? search,
+            string? sort)
+        {
+            // Apply search
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                search = search.Trim().ToLower();
+                query = query.Where(rv =>
+                    rv.RoomName.ToLower().Contains(search) ||
+                    (rv.Visitor != null && rv.Visitor.FullName.ToLower().Contains(search)) ||
+                    (rv.Purpose != null && rv.Purpose.ToLower().Contains(search)) ||
+                    (rv.Visitor != null && rv.Visitor.ContactNumber != null && rv.Visitor.ContactNumber.Contains(search))
+                );
+            }
+
+            // Apply sort
+            query = sort switch
+            {
+                "NameAsc" => query.OrderBy(rv => rv.Visitor != null ? rv.Visitor.FullName : ""),
+                "NameDesc" => query.OrderByDescending(rv => rv.Visitor != null ? rv.Visitor.FullName : ""),
+                "DateNewest" => query.OrderByDescending(rv => rv.EnteredAt),
+                "DateOldest" => query.OrderBy(rv => rv.EnteredAt),
+                "Status" => query.OrderBy(rv => rv.Visitor != null && rv.Visitor.TimeOut.HasValue)
+                                 .ThenByDescending(rv => rv.EnteredAt),
+                "Room" => query.OrderBy(rv => rv.RoomName).ThenByDescending(rv => rv.EnteredAt),
+                _ => query.OrderByDescending(rv => rv.EnteredAt)
+            };
+
+            return query;
         }
     }
 }

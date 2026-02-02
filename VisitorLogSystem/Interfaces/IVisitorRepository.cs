@@ -9,7 +9,11 @@ namespace VisitorLogSystem.Interfaces
     {
         // READ operations
         Task<List<Visitor>> GetAllAsync();
-        Task<Visitor?> GetByIdAsync(int id); 
+
+        // ✅ NEW: Extended method with search and sort
+        Task<List<Visitor>> GetAllAsync(string? search = null, string? sort = null);
+
+        Task<Visitor?> GetByIdAsync(int id);
         Task<List<Visitor>> GetVisitorsTodayAsync();
         Task<List<Visitor>> GetVisitorsThisMonthAsync();
         Task<List<Visitor>> GetRecentVisitorsAsync(int count);
@@ -17,7 +21,7 @@ namespace VisitorLogSystem.Interfaces
 
         // WRITE operations
         Task<Visitor> AddAsync(Visitor visitor);
-        Task<Visitor?> UpdateAsync(Visitor visitor); 
+        Task<Visitor?> UpdateAsync(Visitor visitor);
         Task<bool> DeleteAsync(int id);
         Task<bool> UpdateTimeOutAsync(int id, DateTime timeOut);
     }
