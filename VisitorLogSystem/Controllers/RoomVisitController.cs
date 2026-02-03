@@ -23,21 +23,37 @@ namespace VisitorLogSystem.Controllers
             _roomVisitService = roomVisitService;
         }
 
-        // ✅ UPDATED: Use ViewModel with search/sort
-        public async Task<IActionResult> Index(string? search, string? sort)
+        // ✅ UPDATED: Use ViewModel with search/sort AND pagination
+        public async Task<IActionResult> Index(string? search, string? sort, int page = 1)
         {
-            // Use repository query with search and sort
-            var roomVisits = await _context.RoomVisits
+            const int pageSize = 10;
+
+            // Validate page number
+            if (page < 1) page = 1;
+
+            // Use repository query with search, sort, and pagination
+            var query = _context.RoomVisits
                 .Include(rv => rv.Visitor)
                 .AsQueryable()
-                .ApplySearchAndSort(search, sort)
+                .ApplySearchAndSort(search, sort);
+
+            // Get total count for pagination
+            var totalRecords = await query.CountAsync();
+
+            // Apply pagination
+            var roomVisits = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
 
             var viewModel = new RoomVisitIndexViewModel
             {
                 RoomVisits = roomVisits,
                 SearchTerm = search,
-                SortOption = sort
+                SortOption = sort,
+                CurrentPage = page,
+                PageSize = pageSize,
+                TotalRecords = totalRecords
             };
 
             return View(viewModel);
@@ -284,7 +300,7 @@ namespace VisitorLogSystem.Controllers
 
             ViewData["VisitorName"] = visitor.FullName;
 
-            //FIX: Handle null collection and ensure proper typing
+            //Handle null collection and ensure proper typing
             var roomVisits = visitor.RoomVisits?.OrderByDescending(rv => rv.EnteredAt).ToList()
                              ?? new List<RoomVisit>();
 
@@ -297,7 +313,7 @@ namespace VisitorLogSystem.Controllers
         }
     }
 
-    // ✅ HELPER: Extension method for applying search and sort
+    //Extension method for applying search and sort
     public static class RoomVisitQueryExtensions
     {
         public static IQueryable<RoomVisit> ApplySearchAndSort(

@@ -1,4 +1,5 @@
-﻿@model VisitorLogSystem.ViewModels.DashboardViewModel
+﻿@using System.Linq
+@model VisitorLogSystem.ViewModels.DashboardViewModel
 @{
     ViewData["Title"] = "Dashboard";
 }
@@ -133,7 +134,80 @@
 </div>
 
 <!-- ========================================== -->
-<!-- NEW SECTION: Analytics & Charts -->
+<!-- NEW SECTION: Recent Room Visits -->
+<!-- ========================================== -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">🚪 Recent Room Visits</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.RecentRoomVisits.Any())
+                {
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Visitor Name</th>
+                                <th>Room</th>
+                                <th>Entered At</th>
+                                <th>Purpose</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var roomVisit in Model.RecentRoomVisits)
+                            {
+                                <tr class="@(roomVisit.VisitorSignedOut ? "table-secondary" : "")">
+                                    <td>@roomVisit.VisitorName</td>
+                                    <td><strong>@roomVisit.RoomName</strong></td>
+                                    <td><small>@roomVisit.EnteredAt.ToString("MMM dd, yyyy hh:mm tt")</small></td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(roomVisit.Purpose))
+                                        {
+                                            @roomVisit.Purpose
+                                        }
+                                        else
+                                        {
+                                            <em class="text-muted">Not specified</em>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (roomVisit.VisitorSignedOut)
+                                        {
+                                            <span class="badge bg-secondary">
+                                                <i class="bi bi-box-arrow-right"></i> Signed Out
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-person-check"></i> Active
+                                            </span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <p class="text-muted">No recent room visits found.</p>
+                }
+
+                <div class="mt-3">
+                    <a href="@Url.Action("Index", "RoomVisits")" class="btn btn-outline-warning">
+                        View All Room Visits →
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========================================== -->
+<!-- Analytics & Charts -->
 <!-- ========================================== -->
 <div class="row mb-3">
     <div class="col">
@@ -189,170 +263,169 @@
 
     <script>
         // ============================================
-        // Chart 1: Visitors Per Day (Line Chart)
-        // ============================================
-        fetch('/Dashboard/GetVisitorsPerDay')
-            .then(response => response.json())
-            .then(data => {
-                const ctx = document.getElementById('visitorsPerDayChart').getContext('2d');
-                new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: data.labels,
-                        datasets: [{
-                            label: 'Number of Visitors',
-                            data: data.data,
-                            borderColor: 'rgb(75, 192, 192)',
-                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                            tension: 0.3,
-                            fill: true,
-                            borderWidth: 2,
-                            pointRadius: 4,
-                            pointHoverRadius: 6
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: true,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: {
-                                    stepSize: 1,
-                                    precision: 0
-                                }
-                            }
-                        },
-                        plugins: {
-                            legend: {
-                                display: true,
-                                position: 'top'
+                // Chart 1: Visitors Per Day (Line Chart)
+                // ============================================
+                fetch('/Dashboard/GetVisitorsPerDay')
+                    .then(response => response.json())
+                    .then(data => {
+                        const ctx = document.getElementById('visitorsPerDayChart').getContext('2d');
+                        new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: data.labels,
+                                datasets: [{
+                                    label: 'Number of Visitors',
+                                    data: data.data,
+                                    borderColor: 'rgb(75, 192, 192)',
+                                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                    tension: 0.3,
+                                    fill: true,
+                                    borderWidth: 2,
+                                    pointRadius: 4,
+                                    pointHoverRadius: 6
+                                }]
                             },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        return 'Visitors: ' + context.parsed.y;
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: true,
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        ticks: {
+                                            stepSize: 1,
+                                            precision: 0
+                                        }
+                                    }
+                                },
+                                plugins: {
+                                    legend: {
+                                        display: true,
+                                        position: 'top'
+                                    },
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function(context) {
+                                                return 'Visitors: ' + context.parsed.y;
+                                            }
+                                        }
                                     }
                                 }
                             }
-                        }
-                    }
-                });
-            })
-            .catch(error => {
-                console.error('Error loading visitors per day chart:', error);
-                document.getElementById('visitorsPerDayChart').parentElement.innerHTML =
-                    '<p class="text-danger">Failed to load chart data.</p>';
-            });
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error loading visitors per day chart:', error);
+                        document.getElementById('visitorsPerDayChart').parentElement.innerHTML =
+                            '<p class="text-danger">Failed to load chart data.</p>';
+                    });
 
-        // ============================================
-        // Chart 2: Visitor Status (Doughnut Chart)
-        // ============================================
-        fetch('/Dashboard/GetVisitorStatus')
-            .then(response => response.json())
-            .then(data => {
-                const ctx = document.getElementById('visitorStatusChart').getContext('2d');
-                new Chart(ctx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: data.labels,
-                        datasets: [{
-                            data: data.data,
-                            backgroundColor: [
-                                'rgba(40, 167, 69, 0.8)',   // Green for Inside
-                                'rgba(220, 53, 69, 0.8)'    // Red for Checked Out
-                            ],
-                            borderColor: [
-                                'rgba(40, 167, 69, 1)',
-                                'rgba(220, 53, 69, 1)'
-                            ],
-                            borderWidth: 2
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: true,
-                        plugins: {
-                            legend: {
-                                position: 'bottom',
-                                labels: {
-                                    padding: 15,
-                                    font: {
-                                        size: 13
-                                    }
-                                }
+                // ============================================
+                // Chart 2: Visitor Status (Doughnut Chart)
+                // ============================================
+                fetch('/Dashboard/GetVisitorStatus')
+                    .then(response => response.json())
+                    .then(data => {
+                        const ctx = document.getElementById('visitorStatusChart').getContext('2d');
+                        new Chart(ctx, {
+                            type: 'doughnut',
+                            data: {
+                                labels: data.labels,
+                                datasets: [{
+                                    data: data.data,
+                                    backgroundColor: [
+                                        'rgba(40, 167, 69, 0.8)',   // Green for Inside
+                                        'rgba(220, 53, 69, 0.8)'    // Red for Checked Out
+                                    ],
+                                    borderColor: [
+                                        'rgba(40, 167, 69, 1)',
+                                        'rgba(220, 53, 69, 1)'
+                                    ],
+                                    borderWidth: 2
+                                }]
                             },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        const label = context.label || '';
-                                        const value = context.parsed || 0;
-                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                        const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
-                                        return label + ': ' + value + ' (' + percentage + '%)';
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: true,
+                                plugins: {
+                                    legend: {
+                                        position: 'bottom',
+                                        labels: {
+                                            padding: 15,
+                                            font: {
+                                                size: 13
+                                            }
+                                        }
+                                    },
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function(context) {
+                                                const label = context.label || '';
+                                                const value = context.parsed || 0;
+                                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                                const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                                                return label + ': ' + value + ' (' + percentage + '%)';
+                                            }
+                                        }
                                     }
                                 }
                             }
-                        }
-                    }
-                });
-            })
-            .catch(error => {
-                console.error('Error loading visitor status chart:', error);
-                document.getElementById('visitorStatusChart').parentElement.innerHTML =
-                    '<p class="text-danger">Failed to load chart data.</p>';
-            });
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error loading visitor status chart:', error);
+                        document.getElementById('visitorStatusChart').parentElement.innerHTML =
+                            '<p class="text-danger">Failed to load chart data.</p>';
+                    });
 
-        // ============================================
-        // Chart 3: Top Rooms Visited (Bar Chart)
-        // ============================================
-        fetch('/Dashboard/GetTopRooms')
-            .then(response => response.json())
-            .then(data => {
-                const ctx = document.getElementById('topRoomsChart').getContext('2d');
-                new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: data.labels,
-                        datasets: [{
-                            label: 'Number of Visits',
-                            data: data.data,
-                            backgroundColor: 'rgba(54, 162, 235, 0.7)',
-                            borderColor: 'rgba(54, 162, 235, 1)',
-                            borderWidth: 2
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: true,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: {
-                                    stepSize: 1,
-                                    precision: 0
-                                }
-                            }
-                        },
-                        plugins: {
-                            legend: {
-                                display: false
+                // ============================================
+                // Chart 3: Top Rooms Visited (Bar Chart)
+                // ============================================
+                fetch('/Dashboard/GetTopRooms')
+                    .then(response => response.json())
+                    .then(data => {
+                        const ctx = document.getElementById('topRoomsChart').getContext('2d');
+                        new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels: data.labels,
+                                datasets: [{
+                                    label: 'Number of Visits',
+                                    data: data.data,
+                                    backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                                    borderColor: 'rgba(54, 162, 235, 1)',
+                                    borderWidth: 2
+                                }]
                             },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        return 'Visits: ' + context.parsed.y;
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: true,
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        ticks: {
+                                            stepSize: 1,
+                                            precision: 0
+                                        }
+                                    }
+                                },
+                                plugins: {
+                                    legend: {
+                                        display: false
+                                    },
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function(context) {
+                                                return 'Visits: ' + context.parsed.y;
+                                            }
+                                        }
                                     }
                                 }
                             }
-                        }
-                    }
-                });
-            })
-            .catch(error => {
-                console.error('Error loading top rooms chart:', error);
-                document.getElementById('topRoomsChart').parentElement.innerHTML =
-                    '<p class="text-danger">Failed to load chart data.</p>';
-            });
-    </script>
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error loading top rooms chart:', error);
+                        document.getElementById('topRoomsChart').parentElement.innerHTML =
+                            '<p class="text-danger">Failed to load chart data.</p>';
+                    });</script>
 }

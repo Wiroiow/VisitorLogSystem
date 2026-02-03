@@ -12,16 +12,24 @@ namespace VisitorLogSystem.Controllers
     {
         private readonly IVisitorService _visitorService;
         private readonly IDashboardService _dashboardService;
+        private readonly IRoomVisitService _roomVisitService;
 
-        public DashboardController(IVisitorService visitorService, IDashboardService dashboardService)
+        public DashboardController(
+            IVisitorService visitorService,
+            IDashboardService dashboardService,
+            IRoomVisitService roomVisitService)
         {
             _visitorService = visitorService;
             _dashboardService = dashboardService;
+            _roomVisitService = roomVisitService;
         }
 
-        // YOUR EXISTING INDEX METHOD - UNCHANGED
+        // Updated Index method to include Room Visits
         public async Task<IActionResult> Index()
         {
+            // Get latest 10 room visits for dashboard
+            var latestRoomVisits = await _roomVisitService.GetLatestRoomVisitsAsync(10);
+
             var dashboardViewModel = new DashboardViewModel
             {
                 TotalVisitorsToday = await _visitorService.GetTodayVisitorCountAsync(),
@@ -37,12 +45,24 @@ namespace VisitorLogSystem.Controllers
                         TimeIn = dto.TimeIn,
                         TimeOut = dto.TimeOut
                     })
+                    .ToList(),
+                RecentRoomVisits = latestRoomVisits
+                    .Select(dto => new RoomVisitViewModel
+                    {
+                        Id = dto.Id,
+                        VisitorName = dto.FullName,
+                        RoomName = dto.Purpose, 
+                        EnteredAt = dto.TimeIn,
+                        Purpose = dto.Purpose,
+                        VisitorSignedOut = dto.TimeOut.HasValue
+                    })
                     .ToList()
             };
+
             return View(dashboardViewModel);
         }
 
-        // NEW CHART ENDPOINTS
+        // Chart endpoints 
         [HttpGet]
         public async Task<IActionResult> GetVisitorsPerDay()
         {

@@ -115,6 +115,32 @@ namespace VisitorLogSystem.Services
             return roomVisits.Select(rv => MapToDto(rv, rv.Visitor)).ToList();
         }
 
+        /// Get paginated room visits with search and sort
+        public async Task<(List<RoomVisitDto> RoomVisits, int TotalCount)> GetPaginatedRoomVisitsAsync(
+            int pageNumber,
+            int pageSize,
+            string? search = null,
+            string? sort = null)
+        {
+            var (roomVisits, totalCount) = await _roomVisitRepository.GetPaginatedAsync(
+                pageNumber,
+                pageSize,
+                search,
+                sort);
+
+            var dtos = roomVisits.Select(rv => MapToDto(rv, rv.Visitor)).ToList();
+
+            return (dtos, totalCount);
+        }
+
+        /// Get latest room visits for dashboard
+        public async Task<List<RoomVisitDto>> GetLatestRoomVisitsAsync(int count)
+        {
+            var roomVisits = await _roomVisitRepository.GetAllAsync(search: null, sort: "DateNewest");
+            var limitedVisits = roomVisits.Take(count).ToList();
+            return limitedVisits.Select(rv => MapToDto(rv, rv.Visitor)).ToList();
+        }
+
         // HELPER METHOD match your RoomVisitDto
         private RoomVisitDto MapToDto(RoomVisit roomVisit, Visitor? visitor)
         {
