@@ -9,8 +9,15 @@ namespace VisitorLogSystem.Interfaces
         // CRUD Operations
         Task<List<VisitorDto>> GetAllVisitorsAsync();
 
-        //Extended method with search and sort
+        // Extended method with search and sort
         Task<List<VisitorDto>> GetAllVisitorsAsync(string? search = null, string? sort = null);
+
+        // NEW: Pagination support
+        Task<(List<VisitorDto> visitors, int totalCount)> GetPagedVisitorsAsync(
+             string? search,
+             string? sort,
+             int pageNumber,
+             int pageSize);
 
         Task<VisitorDto?> GetVisitorByIdAsync(int id);
         Task<VisitorDto> CreateVisitorAsync(VisitorDto visitorDto);
@@ -26,7 +33,7 @@ namespace VisitorLogSystem.Interfaces
         Task<int> GetCurrentlyInsideCountAsync();
         Task<List<VisitorDto>> GetRecentVisitorsAsync(int count);
 
-        //Duplicate Detection
+        // Duplicate Detection
         Task<VisitorDto?> FindVisitorByEmailAsync(string email);
         Task<bool> EmailExistsAsync(string email, int? excludeVisitorId = null);
         Task<VisitorDto> FindOrCreateVisitorAsync(VisitorDto visitorDto);

@@ -14,29 +14,36 @@ namespace VisitorLogSystem.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IVisitorService _visitorService;
+        private readonly IVisitorRepository _visitorRepository;
 
-        //Add IVisitorService dependency
-        public VisitorController(ApplicationDbContext context, IVisitorService visitorService)
+        public VisitorController(
+            ApplicationDbContext context,
+            IVisitorService visitorService,
+            IVisitorRepository visitorRepository)
         {
             _context = context;
             _visitorService = visitorService;
+            _visitorRepository = visitorRepository;
         }
 
-        //Use service layer and ViewModel with search/sort
-        public async Task<IActionResult> Index(string? search, string? sort)
+        // Updated Index with pagination
+        public async Task<IActionResult> Index(string? search, string? sort, int pageNumber = 1)
         {
-            // Use repository through service layer (not DbContext directly)
-            var visitors = await _context.Visitors
-                .Include(v => v.RoomVisits)
-                .AsQueryable()
-                .ApplySearchAndSort(search, sort)
-                .ToListAsync();
+            const int pageSize = 10;
+
+            // Use repository for paginated data - UPDATED method name
+            var result = await _visitorRepository.GetPagedAsync(search, sort, pageNumber, pageSize);
+            var visitors = result.visitors;
+            var totalCount = result.totalCount;
 
             var viewModel = new VisitorIndexViewModel
             {
                 Visitors = visitors,
                 SearchTerm = search,
-                SortOption = sort
+                SortOption = sort,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalRecords = totalCount
             };
 
             return View(viewModel);
@@ -256,7 +263,7 @@ namespace VisitorLogSystem.Controllers
         }
     }
 
-    // Extension method for applying search and sort
+    // Extension method for applying search and sort (kept for compatibility)
     public static class VisitorQueryExtensions
     {
         public static IQueryable<Visitor> ApplySearchAndSort(

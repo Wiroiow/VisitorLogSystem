@@ -10,8 +10,11 @@ namespace VisitorLogSystem.Interfaces
         // READ operations
         Task<List<Visitor>> GetAllAsync();
 
-        // ✅ NEW: Extended method with search and sort
+        // Extended method with search and sort
         Task<List<Visitor>> GetAllAsync(string? search = null, string? sort = null);
+
+        // NEW: Pagination support - RENAMED to avoid overload conflict
+        Task<(List<Visitor> visitors, int totalCount)> GetPagedAsync(string? search, string? sort, int pageNumber, int pageSize);
 
         Task<Visitor?> GetByIdAsync(int id);
         Task<List<Visitor>> GetVisitorsTodayAsync();

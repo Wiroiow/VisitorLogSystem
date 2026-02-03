@@ -18,7 +18,6 @@ namespace VisitorLogSystem.Repositories
             _context = context;
         }
 
-        
         public async Task<List<Visitor>> GetAllAsync()
         {
             return await _context.Visitors
@@ -27,7 +26,7 @@ namespace VisitorLogSystem.Repositories
                 .ToListAsync();
         }
 
-        //Extended method with search and sort
+        // Extended method with search and sort
         public async Task<List<Visitor>> GetAllAsync(string? search = null, string? sort = null)
         {
             // Start with base query
@@ -58,6 +57,52 @@ namespace VisitorLogSystem.Repositories
             };
 
             return await query.ToListAsync();
+        }
+
+        // NEW: Pagination support - RENAMED to GetPagedAsync
+        public async Task<(List<Visitor> visitors, int totalCount)> GetPagedAsync(
+            string? search,
+            string? sort,
+            int pageNumber,
+            int pageSize)
+        {
+            // Start with base query
+            IQueryable<Visitor> query = _context.Visitors
+                .Include(v => v.RoomVisits);
+
+            // Apply search filter
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                search = search.Trim().ToLower();
+                query = query.Where(v =>
+                    v.FullName.ToLower().Contains(search) ||
+                    v.Purpose.ToLower().Contains(search) ||
+                    (v.Email != null && v.Email.ToLower().Contains(search)) ||
+                    (v.ContactNumber != null && v.ContactNumber.Contains(search))
+                );
+            }
+
+            // Apply sorting
+            query = sort switch
+            {
+                "NameAsc" => query.OrderBy(v => v.FullName),
+                "NameDesc" => query.OrderByDescending(v => v.FullName),
+                "DateNewest" => query.OrderByDescending(v => v.TimeIn),
+                "DateOldest" => query.OrderBy(v => v.TimeIn),
+                "Status" => query.OrderBy(v => v.TimeOut.HasValue).ThenByDescending(v => v.TimeIn),
+                _ => query.OrderByDescending(v => v.TimeIn)
+            };
+
+            // Get total count before pagination
+            int totalCount = await query.CountAsync();
+
+            // Apply pagination
+            var visitors = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (visitors, totalCount);
         }
 
         public async Task<Visitor?> GetByIdAsync(int id)

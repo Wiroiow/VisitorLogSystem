@@ -15,7 +15,7 @@ namespace VisitorLogSystem.Services
 
         #region CRUD Operations
 
-        
+
         public async Task<List<VisitorDto>> GetAllVisitorsAsync()
         {
             var visitors = await _repository.GetAllAsync();
@@ -27,6 +27,22 @@ namespace VisitorLogSystem.Services
         {
             var visitors = await _repository.GetAllAsync(search, sort);
             return visitors.Select(MapToDto).ToList();
+        }
+
+      
+        // NEW: Pagination support 
+        public async Task<(List<VisitorDto> visitors, int totalCount)> GetPagedVisitorsAsync(
+            string? search,
+            string? sort,
+            int pageNumber,
+            int pageSize)
+        {
+            var result = await _repository.GetPagedAsync(search, sort, pageNumber, pageSize);
+            var visitors = result.visitors;
+            var totalCount = result.totalCount;
+
+            var visitorDtos = visitors.Select(MapToDto).ToList();
+            return (visitorDtos, totalCount);
         }
 
         public async Task<VisitorDto?> GetVisitorByIdAsync(int id)
@@ -123,12 +139,12 @@ namespace VisitorLogSystem.Services
 
         #endregion
 
-        #region ✅ NEW: Duplicate Detection
+        #region Duplicate Detection
 
-        
+
         /// Find existing visitor by email (case-insensitive)
         /// Returns the most recent visitor record with this email
-        
+
         public async Task<VisitorDto?> FindVisitorByEmailAsync(string email)
         {
             if (string.IsNullOrWhiteSpace(email))
@@ -144,9 +160,9 @@ namespace VisitorLogSystem.Services
             return visitor != null ? MapToDto(visitor) : null;
         }
 
-        
+
         /// Check if email already exists in the system
-     
+
         public async Task<bool> EmailExistsAsync(string email, int? excludeVisitorId = null)
         {
             if (string.IsNullOrWhiteSpace(email))

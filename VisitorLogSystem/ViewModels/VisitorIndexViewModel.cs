@@ -4,9 +4,9 @@ using VisitorLogSystem.Models;
 
 namespace VisitorLogSystem.ViewModels
 {
-   
-    /// ViewModel for Visitor/Index page with search and sort functionality
-   
+    
+    /// ViewModel for Visitor/Index page with search, sort, and pagination functionality
+    
     public class VisitorIndexViewModel
     {
         // The list of visitors to display
@@ -17,6 +17,12 @@ namespace VisitorLogSystem.ViewModels
 
         // Sort functionality
         public string? SortOption { get; set; }
+
+        // Pagination properties
+        public int PageNumber { get; set; } = 1;
+        public int PageSize { get; set; } = 10;
+        public int TotalRecords { get; set; }
+        public int TotalPages => (int)Math.Ceiling((double)TotalRecords / PageSize);
 
         // Dropdown options for sorting
         public List<SelectListItem> SortOptions { get; set; } = new List<SelectListItem>
