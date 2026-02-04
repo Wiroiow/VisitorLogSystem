@@ -2,18 +2,14 @@
 
 namespace VisitorLogSystem.ViewModels
 {
-
-
-    /// Contains all statistics and data needed for the dashboard
-
+    /// Contains all statistics and data needed for the dashboard  
     public class DashboardViewModel
     {
-
         public int TotalVisitorsToday { get; set; }
-
         public int CurrentlyInside { get; set; }
-
         public int MonthlyVisitors { get; set; }
+
+        public int TotalRoomVisitsToday { get; set; }
 
         public List<VisitorViewModel> RecentVisitors { get; set; }
 

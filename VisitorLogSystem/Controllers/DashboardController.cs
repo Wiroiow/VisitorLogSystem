@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using VisitorLogSystem.Interfaces;
@@ -24,17 +25,26 @@ namespace VisitorLogSystem.Controllers
             _roomVisitService = roomVisitService;
         }
 
-        // Updated Index method to include Room Visits
+        // Added TotalRoomVisitsToday calculation
         public async Task<IActionResult> Index()
         {
-            // Get latest 10 room visits for dashboard
+            // Get latest 10 room visits for dashboard table
             var latestRoomVisits = await _roomVisitService.GetLatestRoomVisitsAsync(10);
+
+            //Get today's room visits count
+            var today = DateTime.Today;
+            var tomorrow = today.AddDays(1);
+            var todayRoomVisits = await _roomVisitService.GetRoomVisitsByDateRangeAsync(today, tomorrow);
 
             var dashboardViewModel = new DashboardViewModel
             {
                 TotalVisitorsToday = await _visitorService.GetTodayVisitorCountAsync(),
                 CurrentlyInside = await _visitorService.GetCurrentlyInsideCountAsync(),
                 MonthlyVisitors = await _visitorService.GetMonthlyVisitorCountAsync(),
+
+                //Set today's room visits count
+                TotalRoomVisitsToday = todayRoomVisits.Count,
+
                 RecentVisitors = (await _visitorService.GetRecentVisitorsAsync(5))
                     .Select(dto => new VisitorViewModel
                     {
@@ -46,12 +56,13 @@ namespace VisitorLogSystem.Controllers
                         TimeOut = dto.TimeOut
                     })
                     .ToList(),
+
                 RecentRoomVisits = latestRoomVisits
                     .Select(dto => new RoomVisitViewModel
                     {
                         Id = dto.Id,
                         VisitorName = dto.FullName,
-                        RoomName = dto.Purpose, 
+                        RoomName = dto.Purpose,
                         EnteredAt = dto.TimeIn,
                         Purpose = dto.Purpose,
                         VisitorSignedOut = dto.TimeOut.HasValue

@@ -108,7 +108,7 @@ namespace VisitorLogSystem.Services
             return roomVisits.Select(rv => MapToDto(rv, rv.Visitor)).ToList();
         }
 
-        //Get all room visits with search and sort
+        // Get all room visits with search and sort
         public async Task<List<RoomVisitDto>> GetAllRoomVisitsAsync(string? search = null, string? sort = null)
         {
             var roomVisits = await _roomVisitRepository.GetAllAsync(search, sort);
@@ -133,15 +133,24 @@ namespace VisitorLogSystem.Services
             return (dtos, totalCount);
         }
 
-        /// Get latest room visits for dashboard
+     
+        /// Get latest room visits for dashboard (optimized - limits at DB level)
+       
         public async Task<List<RoomVisitDto>> GetLatestRoomVisitsAsync(int count)
         {
-            var roomVisits = await _roomVisitRepository.GetAllAsync(search: null, sort: "DateNewest");
-            var limitedVisits = roomVisits.Take(count).ToList();
-            return limitedVisits.Select(rv => MapToDto(rv, rv.Visitor)).ToList();
+            //Use GetPaginatedAsync to limit at database level (more efficient)
+            var (roomVisits, _) = await _roomVisitRepository.GetPaginatedAsync(
+                pageNumber: 1,
+                pageSize: count,
+                search: null,
+                sort: "DateNewest");
+
+            return roomVisits.Select(rv => MapToDto(rv, rv.Visitor)).ToList();
         }
 
-        // HELPER METHOD match your RoomVisitDto
+        
+        ///Corrected DTO mapping - RoomName now maps correctly
+        
         private RoomVisitDto MapToDto(RoomVisit roomVisit, Visitor? visitor)
         {
             return new RoomVisitDto
@@ -149,9 +158,9 @@ namespace VisitorLogSystem.Services
                 Id = roomVisit.Id,
                 VisitorId = roomVisit.VisitorId,
                 FullName = visitor?.FullName ?? "Unknown",
-                Purpose = roomVisit.Purpose ?? "",
+                Purpose = roomVisit.RoomName, 
                 TimeIn = roomVisit.EnteredAt,
-                TimeOut = null,
+                TimeOut = visitor?.TimeOut,   
                 UserId = 0,
                 Username = ""
             };
