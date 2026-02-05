@@ -31,17 +31,12 @@ namespace VisitorLogSystem.ViewModels
         public int HostUserId { get; set; }
 
         public string? HostUserName { get; set; }
-
         public bool IsCheckedIn { get; set; }
-
         public DateTime CreatedAt { get; set; }
-
         public string? CheckedInByUserName { get; set; }
-
-     
         public DateTime? CheckedInAt { get; set; }
-
         public int? RoomVisitId { get; set; }
+        public string? QRCodeValue { get; set; }
 
         public List<UserDto>? AvailableHosts { get; set; }
     }

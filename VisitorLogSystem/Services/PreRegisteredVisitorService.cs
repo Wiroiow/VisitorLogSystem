@@ -13,15 +13,18 @@ namespace VisitorLogSystem.Services
         private readonly IPreRegisteredVisitorRepository _preRegRepository;
         private readonly IVisitorRepository _visitorRepository;
         private readonly IRoomVisitRepository _roomVisitRepository;
+        private readonly IQRCodeService _qrCodeService; 
 
         public PreRegisteredVisitorService(
             IPreRegisteredVisitorRepository preRegRepository,
             IVisitorRepository visitorRepository,
-            IRoomVisitRepository roomVisitRepository)
+            IRoomVisitRepository roomVisitRepository,
+            IQRCodeService qrCodeService) 
         {
             _preRegRepository = preRegRepository;
             _visitorRepository = visitorRepository;
             _roomVisitRepository = roomVisitRepository;
+            _qrCodeService = qrCodeService; 
         }
 
         public IEnumerable<PreRegisteredVisitorDto> GetAllPreRegisteredVisitors()
@@ -54,6 +57,16 @@ namespace VisitorLogSystem.Services
             return preRegistration != null ? MapToDto(preRegistration) : null;
         }
 
+        // ✅ NEW: Get by QR Code value
+        public PreRegisteredVisitorDto? GetByQRCode(string qrCodeValue)
+        {
+            if (string.IsNullOrWhiteSpace(qrCodeValue))
+                return null;
+
+            var preRegistration = _preRegRepository.GetByQRCode(qrCodeValue);
+            return preRegistration != null ? MapToDto(preRegistration) : null;
+        }
+
         public PreRegisteredVisitorDto CreatePreRegistration(PreRegisteredVisitorDto dto)
         {
             var preRegistration = new PreRegisteredVisitor
@@ -67,6 +80,12 @@ namespace VisitorLogSystem.Services
             };
 
             var created = _preRegRepository.Add(preRegistration);
+
+            //Generate QR Code after creation
+            var qrValue = _qrCodeService.GenerateUniqueQRValue(created.Id);
+            created.QRCodeValue = qrValue;
+            _preRegRepository.Update(created);
+
             return MapToDto(created);
         }
 
@@ -114,11 +133,10 @@ namespace VisitorLogSystem.Services
             return results.Select(MapToDto);
         }
 
-        //FIX: Updated signature to accept roomName parameter
         public async Task<RoomVisitDto> CheckInPreRegisteredVisitorAsync(
             int preRegistrationId,
             int checkedInByUserId,
-            string roomName = "Main Office") 
+            string roomName = "Main Office")
         {
             var preReg = _preRegRepository.GetById(preRegistrationId);
             if (preReg == null)
@@ -138,18 +156,16 @@ namespace VisitorLogSystem.Services
 
             if (visitor == null)
             {
-               
                 visitor = new Visitor
                 {
                     FullName = preReg.FullName,
-                    TimeIn = DateTime.Now, 
+                    TimeIn = DateTime.Now,
                     CreatedAt = DateTime.Now
                 };
                 visitor = await _visitorRepository.AddAsync(visitor);
             }
             else
             {
-                //FIX: If visitor exists but TimeIn is default, update it
                 if (visitor.TimeIn == default(DateTime))
                 {
                     visitor.TimeIn = DateTime.Now;
@@ -157,7 +173,6 @@ namespace VisitorLogSystem.Services
                 }
             }
 
-            //FIX: Use provided room name or fall back to pre-reg room name
             string finalRoomName = !string.IsNullOrWhiteSpace(roomName)
                 ? roomName
                 : (preReg.RoomName ?? "Main Office");
@@ -166,7 +181,7 @@ namespace VisitorLogSystem.Services
             var roomVisit = new RoomVisit
             {
                 VisitorId = visitor.Id,
-                RoomName = finalRoomName, 
+                RoomName = finalRoomName,
                 Purpose = preReg.Purpose,
                 EnteredAt = DateTime.Now,
                 CreatedAt = DateTime.Now
@@ -180,7 +195,6 @@ namespace VisitorLogSystem.Services
             preReg.RoomVisitId = roomVisit.Id;
             _preRegRepository.Update(preReg);
 
-            // Return the created RoomVisit as DTO
             var roomVisitWithRelations = await _roomVisitRepository.GetByIdAsync(roomVisit.Id);
 
             if (roomVisitWithRelations == null)
@@ -217,8 +231,9 @@ namespace VisitorLogSystem.Services
                 CheckedInByUserName = model.CheckedInByUser?.Username,
                 CheckedInAt = model.CheckedInAt,
                 RoomVisitId = model.RoomVisitId,
-                RoomName = model.RoomName 
+                RoomName = model.RoomName,
+                QRCodeValue = model.QRCodeValue 
             };
         }
-        }
+    }
 }

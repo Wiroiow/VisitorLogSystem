@@ -1,40 +1,79 @@
 ﻿@model VisitorLogSystem.ViewModels.KioskPreRegLookupViewModel
 @{
-    ViewData["Title"] = "Are You Pre-Registered?";
+    ViewData["Title"] = "Pre-Registration Lookup";
     Layout = "~/Views/Shared/_KioskLayout.cshtml";
 }
 
 <div class="kiosk-form-container">
     <div class="text-center mb-5">
-        <i class="bi bi-calendar-check-fill kiosk-header-icon text-primary"></i>
-        <h2 class="display-5 fw-bold">Are You Pre-Registered?</h2>
-        <p class="lead fs-4 text-muted">Enter your name to check</p>
+        <i class="bi bi-search kiosk-header-icon text-primary"></i>
+        <h2 class="display-5 fw-bold">Find Your Pre-Registration</h2>
+        <p class="lead fs-4 text-muted">Enter your name or scan your QR code</p>
     </div>
 
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show kiosk-alert" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- QR Code Scan Form -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body text-center p-4">
+            <h4 class="mb-3">
+                <i class="bi bi-qr-code-scan text-success"></i>
+                Scan QR Code
+            </h4>
+            <form asp-action="QRCodeLookup" method="post">
+                @Html.AntiForgeryToken()
+                <div class="mb-3">
+                    <input type="text"
+                           name="qrCodeValue"
+                           class="form-control form-control-kiosk text-center"
+                           placeholder="Place cursor here and scan QR code"
+                           autofocus
+                           autocomplete="off" />
+                </div>
+                <button type="submit" class="btn btn-success btn-kiosk btn-kiosk-primary">
+                    <i class="bi bi-qr-code me-2"></i>
+                    Check In with QR Code
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="text-center my-4">
+        <span class="badge bg-secondary fs-5 px-4 py-2">OR</span>
+    </div>
+
+    <!-- Name Lookup Form -->
     <form asp-action="PreRegLookup" method="post" class="kiosk-form">
         @Html.AntiForgeryToken()
+
         <div asp-validation-summary="ModelOnly" class="alert alert-danger kiosk-alert" role="alert"></div>
 
-        <div class="mb-5">
+        <div class="mb-4">
             <label asp-for="FullName" class="form-label kiosk-label">
-                <i class="bi bi-person-fill me-2"></i>Full Name
+                <i class="bi bi-person-fill me-2"></i>Enter Your Full Name
             </label>
             <input asp-for="FullName"
                    class="form-control form-control-kiosk"
-                   placeholder="Enter your full name"
-                   autofocus
+                   placeholder="John Doe"
                    autocomplete="off" />
             <span asp-validation-for="FullName" class="text-danger kiosk-error"></span>
         </div>
 
         <div class="d-grid gap-3">
-            <button type="submit" class="btn btn-primary btn-kiosk">
+            <button type="submit" class="btn btn-primary btn-kiosk btn-kiosk-primary">
                 <i class="bi bi-search me-3"></i>
-                Check Pre-Registration
+                Search Pre-Registration
             </button>
 
             <a asp-action="SkipPreReg" class="btn btn-outline-secondary btn-kiosk">
-                <i class="bi bi-skip-forward-fill me-3"></i>
+                <i class="bi bi-skip-forward me-2"></i>
                 Skip - I'm a Walk-In Visitor
             </a>
 

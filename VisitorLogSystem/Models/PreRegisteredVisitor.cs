@@ -23,27 +23,26 @@ namespace VisitorLogSystem.Models
         public int HostUserId { get; set; }
 
         [ForeignKey("HostUserId")]
-        public User? HostUser { get; set; } 
+        public User? HostUser { get; set; }
 
         public bool IsCheckedIn { get; set; }
-
         public DateTime CreatedAt { get; set; }
 
-        
         public int? CheckedInByUserId { get; set; }
-
         [ForeignKey("CheckedInByUserId")]
         public User? CheckedInByUser { get; set; }
 
-        public DateTime CheckedInAt { get; set; }
+        public DateTime? CheckedInAt { get; set; }
 
-        
         public int? RoomVisitId { get; set; }
-
         [ForeignKey("RoomVisitId")]
         public RoomVisit? RoomVisit { get; set; }
 
         [MaxLength(100)]
         public string? RoomName { get; set; }
+
+        
+        [MaxLength(100)]
+        public string? QRCodeValue { get; set; }
     }
 }

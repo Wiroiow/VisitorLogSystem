@@ -12,12 +12,15 @@ namespace VisitorLogSystem.Interfaces
         IEnumerable<PreRegisteredVisitorDto> GetPendingVisitorsByDate(DateTime date);
         IEnumerable<PreRegisteredVisitorDto> GetByHostUserId(int hostUserId);
         PreRegisteredVisitorDto? GetById(int id);
+
+       
+        PreRegisteredVisitorDto? GetByQRCode(string qrCodeValue);
+
         PreRegisteredVisitorDto CreatePreRegistration(PreRegisteredVisitorDto dto);
         PreRegisteredVisitorDto UpdatePreRegistration(PreRegisteredVisitorDto dto);
         void DeletePreRegistration(int id);
         IEnumerable<PreRegisteredVisitorDto> SearchPending(string searchTerm);
 
-        //FIX: Updated signature to include roomName parameter
         Task<RoomVisitDto> CheckInPreRegisteredVisitorAsync(
             int preRegistrationId,
             int checkedInByUserId,

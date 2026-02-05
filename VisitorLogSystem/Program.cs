@@ -80,6 +80,8 @@ builder.Services.AddScoped<IPreRegisteredVisitorService, PreRegisteredVisitorSer
 // ✅ NEW - Email Service
 builder.Services.AddScoped<IEmailService, EmailService>();
 
+builder.Services.AddScoped<IQRCodeService, QRCodeService>();
+
 // ═══════════════════════════════════════════════════════════
 // STEP 5: Configure Logging
 // ═══════════════════════════════════════════════════════════

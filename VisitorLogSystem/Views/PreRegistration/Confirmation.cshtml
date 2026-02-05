@@ -1,0 +1,79 @@
+﻿@model VisitorLogSystem.ViewModels.PreRegistrationViewModel
+
+@{
+    ViewData["Title"] = "Pre-Registration Confirmation";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white text-center">
+                    <h3><i class="fas fa-check-circle"></i> Pre-Registration Successful!</h3>
+                </div>
+                <div class="card-body text-center">
+                    <div class="alert alert-success">
+                        <strong>@Model.FullName</strong> has been successfully pre-registered.
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <p><strong>Purpose:</strong> @Model.Purpose</p>
+                            <p><strong>Expected Visit:</strong> @Model.ExpectedVisitDate.ToString("MMM dd, yyyy hh:mm tt")</p>
+                            <p><strong>Host:</strong> @Model.HostUserName</p>
+                        </div>
+                        <div class="col-md-6">
+                            @if (!string.IsNullOrEmpty(Model.QRCodeValue))
+                            {
+                                <div class="qr-code-container">
+                                    <h5 class="mb-3">Your QR Code</h5>
+                                    <img src="data:image/png;base64,@ViewBag.QRCodeImage"
+                                         alt="QR Code"
+                                         class="img-fluid border p-2"
+                                         style="max-width: 250px;" />
+                                    <p class="text-muted mt-2" style="font-size: 0.9em;">
+                                        <i class="fas fa-info-circle"></i> Show this QR code at the kiosk for quick check-in
+                                    </p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-mobile-alt"></i>
+                        <strong>Check-In Instructions:</strong><br>
+                        On your visit day, you can check in by:
+                        <ul class="text-start mt-2">
+                            <li>Scanning the QR code above at the kiosk</li>
+                            <li>Entering your name at the kiosk</li>
+                        </ul>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-4">
+                        <a asp-action="Index" class="btn btn-primary">
+                            <i class="fas fa-list"></i> View All Pre-Registrations
+                        </a>
+                        <a asp-action="Create" class="btn btn-success">
+                            <i class="fas fa-plus"></i> Pre-Register Another Visitor
+                        </a>
+                        <button onclick="window.print()" class="btn btn-outline-secondary">
+                            <i class="fas fa-print"></i> Print QR Code
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @@media print {
+        .btn, .alert-info, nav, .card-header {
+            display: none !important;
+        }
+
+        .qr-code-container {
+            page-break-inside: avoid;
+        }
+    }
+</style>

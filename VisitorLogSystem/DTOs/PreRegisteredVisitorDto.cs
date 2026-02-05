@@ -16,8 +16,9 @@ namespace VisitorLogSystem.DTOs
         public string? CheckedInByUserName { get; set; }
         public DateTime? CheckedInAt { get; set; }
         public int? RoomVisitId { get; set; }
-
-       
         public string? RoomName { get; set; }
+
+      
+        public string? QRCodeValue { get; set; }
     }
 }

@@ -15,18 +15,21 @@ namespace VisitorLogSystem.Controllers
         private readonly IPreRegisteredVisitorService _preRegService;
         private readonly IUserManagementService _userService;
         private readonly IAuthService _authService;
-        private readonly IEmailService _emailService; // ✅ NEW
+        private readonly IEmailService _emailService;
+        private readonly IQRCodeService _qrCodeService; 
 
         public PreRegistrationController(
             IPreRegisteredVisitorService preRegService,
             IUserManagementService userService,
             IAuthService authService,
-            IEmailService emailService) // ✅ NEW
+            IEmailService emailService,
+            IQRCodeService qrCodeService) 
         {
             _preRegService = preRegService;
             _userService = userService;
             _authService = authService;
-            _emailService = emailService; // ✅ NEW
+            _emailService = emailService;
+            _qrCodeService = qrCodeService; 
         }
 
         public IActionResult Index(string searchTerm, DateTime? filterDate, bool showOnlyPending = true)
@@ -64,7 +67,8 @@ namespace VisitorLogSystem.Controllers
                     CreatedAt = dto.CreatedAt,
                     CheckedInByUserName = dto.CheckedInByUserName,
                     CheckedInAt = dto.CheckedInAt ?? default(DateTime),
-                    RoomVisitId = dto.RoomVisitId
+                    RoomVisitId = dto.RoomVisitId,
+                    QRCodeValue = dto.QRCodeValue 
                 }).ToList(),
                 SearchTerm = searchTerm,
                 FilterDate = filterDate,
@@ -116,7 +120,7 @@ namespace VisitorLogSystem.Controllers
 
                 var created = _preRegService.CreatePreRegistration(dto);
 
-                // ✅ NEW: Send email notification if visitor email provided
+                // Send email notification if visitor email provided
                 if (!string.IsNullOrWhiteSpace(viewModel.VisitorEmail))
                 {
                     try
@@ -144,7 +148,8 @@ namespace VisitorLogSystem.Controllers
                     TempData["SuccessMessage"] = "Visitor pre-registered successfully!";
                 }
 
-                return RedirectToAction("Index");
+                //Redirect to confirmation page with QR code
+                return RedirectToAction("Confirmation", new { id = created.Id });
             }
             catch (Exception ex)
             {
@@ -153,6 +158,36 @@ namespace VisitorLogSystem.Controllers
                 viewModel.AvailableHosts = hosts.ToList();
                 return View(viewModel);
             }
+        }
+
+        //Confirmation page with QR code
+        [HttpGet]
+        public IActionResult Confirmation(int id)
+        {
+            var dto = _preRegService.GetById(id);
+            if (dto == null)
+            {
+                return NotFound();
+            }
+
+            var viewModel = new PreRegistrationViewModel
+            {
+                Id = dto.Id,
+                FullName = dto.FullName,
+                Purpose = dto.Purpose,
+                ExpectedVisitDate = dto.ExpectedVisitDate,
+                HostUserId = dto.HostUserId,
+                HostUserName = dto.HostUserName,
+                QRCodeValue = dto.QRCodeValue
+            };
+
+            // Generate QR code as Base64 image
+            if (!string.IsNullOrEmpty(dto.QRCodeValue))
+            {
+                ViewBag.QRCodeImage = _qrCodeService.GenerateQRCodeBase64(dto.QRCodeValue);
+            }
+
+            return View(viewModel);
         }
 
         public async Task<IActionResult> Edit(int id)
@@ -278,8 +313,15 @@ namespace VisitorLogSystem.Controllers
                 CreatedAt = dto.CreatedAt,
                 CheckedInByUserName = dto.CheckedInByUserName,
                 CheckedInAt = dto.CheckedInAt ?? default(DateTime),
-                RoomVisitId = dto.RoomVisitId
+                RoomVisitId = dto.RoomVisitId,
+                QRCodeValue = dto.QRCodeValue 
             };
+
+            //Generate QR code for display
+            if (!string.IsNullOrEmpty(dto.QRCodeValue))
+            {
+                ViewBag.QRCodeImage = _qrCodeService.GenerateQRCodeBase64(dto.QRCodeValue);
+            }
 
             return View(viewModel);
         }

@@ -64,6 +64,19 @@ namespace VisitorLogSystem.Repositories
                 .FirstOrDefault(p => p.Id == id);
         }
 
+        //Get by QR Code
+        public PreRegisteredVisitor? GetByQRCode(string qrCodeValue)
+        {
+            if (string.IsNullOrWhiteSpace(qrCodeValue))
+                return null;
+
+            return _context.PreRegisteredVisitors
+                .Include(p => p.HostUser)
+                .Include(p => p.CheckedInByUser)
+                .Include(p => p.RoomVisit)
+                .FirstOrDefault(p => p.QRCodeValue == qrCodeValue && !p.IsCheckedIn);
+        }
+
         public PreRegisteredVisitor Add(PreRegisteredVisitor preRegisteredVisitor)
         {
             _context.PreRegisteredVisitors.Add(preRegisteredVisitor);

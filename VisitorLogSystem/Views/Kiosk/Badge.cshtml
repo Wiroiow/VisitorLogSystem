@@ -1,0 +1,200 @@
+﻿@model VisitorLogSystem.ViewModels.VisitorBadgeViewModel
+
+@{
+    ViewData["Title"] = "Visitor Badge";
+    Layout = "~/Views/Shared/_KioskLayout.cshtml";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <!-- On-Screen View -->
+            <div class="card shadow-lg mb-4 d-print-none">
+                <div class="card-header bg-success text-white text-center py-3">
+                    <h3><i class="bi bi-check-circle-fill"></i> Check-In Complete!</h3>
+                </div>
+                <div class="card-body text-center">
+                    <div class="alert alert-success">
+                        <h5><strong>Welcome, @Model.VisitorName!</strong></h5>
+                        <p class="mb-0">Your visitor badge is ready below.</p>
+                    </div>
+
+                    <div class="d-grid gap-3 mt-4">
+                        <button onclick="window.print()" class="btn btn-primary btn-lg">
+                            <i class="bi bi-printer-fill me-2"></i> Print Badge
+                        </button>
+                        <a asp-action="Welcome" class="btn btn-outline-secondary btn-lg">
+                            <i class="bi bi-house-fill me-2"></i> Finish & Return to Home
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Printable Badge -->
+            <div class="visitor-badge">
+                <div class="badge-header">
+                    <h1>VISITOR PASS</h1>
+                    <p class="company-name">Visitor Log System</p>
+                </div>
+
+                <div class="badge-body">
+                    <div class="visitor-info">
+                        <div class="info-row">
+                            <span class="label">Name:</span>
+                            <span class="value">@Model.VisitorName</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Room:</span>
+                            <span class="value">@Model.RoomName</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Date:</span>
+                            <span class="value">@Model.VisitDate.ToString("MMM dd, yyyy")</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Time:</span>
+                            <span class="value">@Model.VisitDate.ToString("hh:mm tt")</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="label">Purpose:</span>
+                            <span class="value">@Model.Purpose</span>
+                        </div>
+                    </div>
+
+                    <div class="qr-code-section">
+                        <div class="qr-placeholder">
+                            <i class="bi bi-qr-code" style="font-size: 120px; color: #333;"></i>
+                            <p class="mt-2">Visitor ID: @Model.VisitorId</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="badge-footer">
+                    <p class="footer-note">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        Please wear this badge visibly at all times while on premises.
+                    </p>
+                    <p class="footer-note">
+                        Return this badge to reception upon departure.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .visitor-badge {
+        background: white;
+        border: 3px solid #333;
+        border-radius: 15px;
+        padding: 30px;
+        max-width: 600px;
+        margin: 0 auto;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .badge-header {
+        text-align: center;
+        border-bottom: 3px solid #28a745;
+        padding-bottom: 20px;
+        margin-bottom: 30px;
+    }
+
+        .badge-header h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #28a745;
+            margin: 0;
+            letter-spacing: 2px;
+        }
+
+    .company-name {
+        font-size: 1.2rem;
+        color: #666;
+        margin: 5px 0 0 0;
+    }
+
+    .badge-body {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+
+    .visitor-info {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #dee2e6;
+        font-size: 1.1rem;
+    }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-row .label {
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .info-row .value {
+            color: #212529;
+            text-align: right;
+        }
+
+    .qr-code-section {
+        text-align: center;
+        padding: 20px;
+        background: #fff;
+        border: 2px dashed #dee2e6;
+        border-radius: 10px;
+    }
+
+    .qr-placeholder {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .badge-footer {
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 2px solid #dee2e6;
+        text-align: center;
+    }
+
+    .footer-note {
+        font-size: 0.9rem;
+        color: #666;
+        margin: 8px 0;
+    }
+
+    /* Print Styles */
+    @@media print {
+        body {
+            background: white;
+        }
+
+        .d-print-none {
+            display: none !important;
+        }
+
+        .visitor-badge {
+            box-shadow: none;
+            page-break-inside: avoid;
+            margin-top: 0;
+        }
+
+        .badge-header h1 {
+            color: black !important;
+        }
+    }
+</style>

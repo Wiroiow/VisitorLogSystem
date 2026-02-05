@@ -13,21 +13,21 @@ namespace VisitorLogSystem.Controllers
         private readonly IVisitorService _visitorService;
         private readonly IRoomVisitService _roomVisitService;
         private readonly IPreRegisteredVisitorService _preRegService;
-        private readonly IEmailService _emailService; // ✅ ADDED
-        private readonly IUserManagementService _userService; // ✅ ADDED
+        private readonly IEmailService _emailService;
+        private readonly IUserManagementService _userService;
 
         public KioskController(
             IVisitorService visitorService,
             IRoomVisitService roomVisitService,
             IPreRegisteredVisitorService preRegService,
             IEmailService emailService,
-            IUserManagementService userService) // ✅ ADDED
+            IUserManagementService userService)
         {
             _visitorService = visitorService;
             _roomVisitService = roomVisitService;
             _preRegService = preRegService;
             _emailService = emailService;
-            _userService = userService; // ✅ ADDED
+            _userService = userService;
         }
 
         #region Screen 1: Welcome Screen
@@ -69,6 +69,28 @@ namespace VisitorLogSystem.Controllers
 
             TempData["ErrorMessage"] = $"No pre-registration found for '{model.FullName}' today. Please use Walk-In registration.";
             return View(model);
+        }
+
+        //QR Code Scan Lookup
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult QRCodeLookup(string qrCodeValue)
+        {
+            if (string.IsNullOrWhiteSpace(qrCodeValue))
+            {
+                TempData["ErrorMessage"] = "Invalid QR code scanned.";
+                return RedirectToAction(nameof(PreRegLookup));
+            }
+
+            var preReg = _preRegService.GetByQRCode(qrCodeValue);
+
+            if (preReg != null && !preReg.IsCheckedIn)
+            {
+                return RedirectToAction(nameof(VisitorDetails), new { preRegId = preReg.Id });
+            }
+
+            TempData["ErrorMessage"] = "QR code not found or visitor already checked in.";
+            return RedirectToAction(nameof(PreRegLookup));
         }
 
         [HttpGet]
@@ -128,6 +150,7 @@ namespace VisitorLogSystem.Controllers
             try
             {
                 int visitorId;
+                int roomVisitId;
 
                 // CASE 1: Pre-registered visitor
                 if (model.IsPreRegistered && model.PreRegistrationId.HasValue)
@@ -141,6 +164,7 @@ namespace VisitorLogSystem.Controllers
                     );
 
                     visitorId = roomVisitDto.VisitorId;
+                    roomVisitId = roomVisitDto.Id;
 
                     var visitorDto = await _visitorService.GetVisitorByIdAsync(visitorId);
                     if (visitorDto != null)
@@ -180,14 +204,15 @@ namespace VisitorLogSystem.Controllers
                     var visitor = await _visitorService.FindOrCreateVisitorAsync(visitorDto);
                     visitorId = visitor.Id;
 
-                    await _roomVisitService.RecordRoomEntryAsync(
+                    var roomVisit = await _roomVisitService.RecordRoomEntryAsync(
                         visitorId,
                         model.RoomName,
                         model.Purpose
                     );
+                    roomVisitId = roomVisit.Id;
                 }
 
-                // ✅ Send email notifications
+                
                 try
                 {
                     if (!string.IsNullOrWhiteSpace(model.Email))
@@ -228,12 +253,11 @@ namespace VisitorLogSystem.Controllers
                     Console.WriteLine($"Email notification failed: {emailEx.Message}");
                 }
 
-                return RedirectToAction(nameof(Success), new
+                
+                return RedirectToAction(nameof(Badge), new
                 {
-                    name = model.FullName,
-                    room = model.RoomName,
-                    purpose = model.Purpose,
-                    wasPreReg = model.IsPreRegistered
+                    visitorId = visitorId,
+                    roomVisitId = roomVisitId
                 });
             }
             catch (Exception ex)
@@ -241,6 +265,45 @@ namespace VisitorLogSystem.Controllers
                 ModelState.AddModelError("", $"Check-in failed: {ex.Message}");
                 ViewBag.AvailableRooms = GetAvailableRooms();
                 return View(model);
+            }
+        }
+
+        #endregion
+
+        #region ✅ NEW: Badge Generation
+
+        [HttpGet]
+        public async Task<IActionResult> Badge(int visitorId, int roomVisitId)
+        {
+            try
+            {
+                var visitor = await _visitorService.GetVisitorByIdAsync(visitorId);
+                var roomVisit = await _roomVisitService.GetVisitorRoomHistoryAsync(visitorId);
+                var currentVisit = roomVisit.FirstOrDefault(rv => rv.Id == roomVisitId);
+
+                if (visitor == null || currentVisit == null)
+                {
+                    TempData["ErrorMessage"] = "Visitor or visit details not found.";
+                    return RedirectToAction(nameof(Welcome));
+                }
+
+                var badgeModel = new VisitorBadgeViewModel
+                {
+                    VisitorName = visitor.FullName,
+                    RoomName = currentVisit.Purpose, // Note: Your DTO maps RoomName to Purpose
+                    VisitDate = currentVisit.TimeIn,
+                    Purpose = visitor.Purpose,
+                    ContactNumber = visitor.ContactNumber,
+                    VisitorId = visitorId,
+                    RoomVisitId = roomVisitId
+                };
+
+                return View(badgeModel);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error generating badge: {ex.Message}";
+                return RedirectToAction(nameof(Welcome));
             }
         }
 
