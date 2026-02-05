@@ -20,6 +20,7 @@ namespace VisitorLogSystem.Migrations
                     username = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     password_hash = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     role = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    email = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     created_at = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>

@@ -29,10 +29,33 @@
     </div>
 }
 
+@* ✅ NEW: Toggle buttons for Active/All Room Visits *@
+<div class="btn-group mb-3" role="group" aria-label="Room visit filter">
+    <a asp-action="Index"
+       asp-route-activeOnly="true"
+       asp-route-search="@Model.SearchTerm"
+       asp-route-sort="@Model.SortOption"
+       asp-route-page="1"
+       class="btn @(Model.ShowActiveOnly ? "btn-success" : "btn-outline-success")">
+        <i class="bi bi-person-check"></i> Active Room Visits
+    </a>
+    <a asp-action="Index"
+       asp-route-activeOnly="false"
+       asp-route-search="@Model.SearchTerm"
+       asp-route-sort="@Model.SortOption"
+       asp-route-page="1"
+       class="btn @(!Model.ShowActiveOnly ? "btn-primary" : "btn-outline-primary")">
+        <i class="bi bi-list"></i> All Room Visits
+    </a>
+</div>
+
 @*  ADD THIS ENTIRE SEARCH AND SORT CARD - Place it here, before the table *@
 <div class="card mb-3">
     <div class="card-body">
         <form method="get" asp-action="Index" class="row g-3">
+            @* ✅ NEW: Preserve activeOnly filter in search form *@
+            <input type="hidden" name="activeOnly" value="@Model.ShowActiveOnly" />
+
             <div class="col-md-6">
                 <label for="search" class="form-label">🔍 Search</label>
                 <input type="text"
@@ -53,7 +76,9 @@
         @if (!string.IsNullOrWhiteSpace(Model.SearchTerm) || !string.IsNullOrWhiteSpace(Model.SortOption))
         {
             <div class="mt-2">
-                <a asp-action="Index" class="btn btn-sm btn-secondary">Clear Filters</a>
+                <a asp-action="Index"
+                   asp-route-activeOnly="@Model.ShowActiveOnly"
+                   class="btn btn-sm btn-secondary">Clear Filters</a>
             </div>
         }
     </div>
@@ -153,7 +178,16 @@
             {
                 <tr>
                     <td colspan="7" class="text-center text-muted">
-                        <em>No room visits recorded yet.</em>
+                        <em>
+                            @if (Model.ShowActiveOnly)
+                            {
+                                <text>No active room visits at the moment.</text>
+                            }
+                            else
+                            {
+                                <text>No room visits recorded yet.</text>
+                            }
+                        </em>
                     </td>
                 </tr>
             }
@@ -172,7 +206,8 @@
                    asp-action="Index"
                    asp-route-page="@(Model.CurrentPage - 1)"
                    asp-route-search="@Model.SearchTerm"
-                   asp-route-sort="@Model.SortOption">
+                   asp-route-sort="@Model.SortOption"
+                   asp-route-activeOnly="@Model.ShowActiveOnly">
                     Previous
                 </a>
             </li>
@@ -185,7 +220,8 @@
                        asp-action="Index"
                        asp-route-page="@i"
                        asp-route-search="@Model.SearchTerm"
-                       asp-route-sort="@Model.SortOption">
+                       asp-route-sort="@Model.SortOption"
+                       asp-route-activeOnly="@Model.ShowActiveOnly">
                         @i
                     </a>
                 </li>
@@ -197,7 +233,8 @@
                    asp-action="Index"
                    asp-route-page="@(Model.CurrentPage + 1)"
                    asp-route-search="@Model.SearchTerm"
-                   asp-route-sort="@Model.SortOption">
+                   asp-route-sort="@Model.SortOption"
+                   asp-route-activeOnly="@Model.ShowActiveOnly">
                     Next
                 </a>
             </li>

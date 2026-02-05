@@ -4,9 +4,7 @@ using VisitorLogSystem.Models;
 
 namespace VisitorLogSystem.ViewModels
 {
-
     /// ViewModel for RoomVisits/Index page with search and sort functionality
-
     public class RoomVisitIndexViewModel
     {
         // The list of room visits to display
@@ -17,6 +15,9 @@ namespace VisitorLogSystem.ViewModels
 
         // Sort functionality
         public string? SortOption { get; set; }
+
+       
+        public bool ShowActiveOnly { get; set; }
 
         // Pagination properties
         public int CurrentPage { get; set; } = 1;

@@ -12,8 +12,8 @@ using VisitorLogSystem.Data;
 namespace VisitorLogSystem.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260202032623_AddEmailToUser")]
-    partial class AddEmailToUser
+    [Migration("20260205020107_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

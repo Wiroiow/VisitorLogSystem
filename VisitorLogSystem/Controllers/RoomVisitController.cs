@@ -23,8 +23,8 @@ namespace VisitorLogSystem.Controllers
             _roomVisitService = roomVisitService;
         }
 
-        // ✅ UPDATED: Use ViewModel with search/sort AND pagination
-        public async Task<IActionResult> Index(string? search, string? sort, int page = 1)
+        // ✅ UPDATED: Use ViewModel with search/sort, pagination, AND active filter
+        public async Task<IActionResult> Index(string? search, string? sort, bool? activeOnly, int page = 1)
         {
             const int pageSize = 10;
 
@@ -34,8 +34,16 @@ namespace VisitorLogSystem.Controllers
             // Use repository query with search, sort, and pagination
             var query = _context.RoomVisits
                 .Include(rv => rv.Visitor)
-                .AsQueryable()
-                .ApplySearchAndSort(search, sort);
+                .AsQueryable();
+
+            // ✅ NEW: Apply active filter (only show room visits where visitor is still in building)
+            if (activeOnly == true)
+            {
+                query = query.Where(rv => rv.Visitor != null && rv.Visitor.TimeOut == null);
+            }
+
+            // Apply search and sort
+            query = query.ApplySearchAndSort(search, sort);
 
             // Get total count for pagination
             var totalRecords = await query.CountAsync();
@@ -51,6 +59,7 @@ namespace VisitorLogSystem.Controllers
                 RoomVisits = roomVisits,
                 SearchTerm = search,
                 SortOption = sort,
+                ShowActiveOnly = activeOnly ?? false, 
                 CurrentPage = page,
                 PageSize = pageSize,
                 TotalRecords = totalRecords
